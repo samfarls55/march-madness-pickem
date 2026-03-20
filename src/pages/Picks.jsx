@@ -36,9 +36,6 @@ function timeUntilGameLock(game) {
 
 function dateLabel(dateStr, today) {
   if (dateStr === today) return 'Today'
-  const nextDay = new Date(today + 'T12:00:00')
-  nextDay.setDate(nextDay.getDate() + 1)
-  if (dateStr === nextDay.toISOString().split('T')[0]) return 'Tomorrow'
   const d = new Date(dateStr + 'T12:00:00')
   return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
 }
@@ -50,7 +47,6 @@ export default function Picks() {
   const [existingPicks, setExistingPicks] = useState({})
   const [allPicksMap, setAllPicksMap] = useState({})
   const [tiebreaker, setTiebreaker] = useState('')
-  const [selectedDate, setSelectedDate] = useState(today)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -166,10 +162,6 @@ export default function Picks() {
     )
   }
 
-  // Show games for the selected date; fall back to first available if selectedDate has no games
-  const activeDate = gamesByDate[selectedDate] ? selectedDate : sortedDates[0]
-  const visibleGames = gamesByDate[activeDate] || []
-
   const pickedCount = openGames.filter(g => picks[g.id]).length
   const anyPicked = pickedCount > 0
 
@@ -186,111 +178,106 @@ export default function Picks() {
         ) : null}
       </div>
 
-      {sortedDates.length > 1 && (
-        <div className="date-toggle">
-          {sortedDates.map(date => (
-            <button
-              key={date}
-              type="button"
-              className={`date-toggle-btn ${date === activeDate ? 'active' : ''}`}
-              onClick={() => setSelectedDate(date)}
-            >
-              {dateLabel(date, today)}
-            </button>
-          ))}
-        </div>
-      )}
-
       <form onSubmit={handleSubmit}>
-        <div className="games-list">
-          {visibleGames.map(game => {
-            const myPick = picks[game.id]
-            const alreadySubmitted = !!existingPicks[game.id]
-            const gameOpen = isGameOpen(game)
-            const gameLockCountdown = gameOpen ? timeUntilGameLock(game) : null
-            const pts = ROUND_POINTS[game.round]
-
-            function nameList(names) {
-              if (!names.length) return <span className="muted">—</span>
-              if (names.length <= 3) return names.join(', ')
-              return `${names.slice(0, 3).join(', ')} +${names.length - 3} more`
-            }
-
-            return (
-              <div key={game.id} className={`game-card ${myPick ? 'has-pick' : ''} ${!gameOpen ? 'locked' : ''}`}>
-                <div className="game-meta">
-                  <span className="game-round">{ROUND_LABELS[game.round]} · {pts} pt{pts > 1 ? 's' : ''}</span>
-                  {gameOpen
-                    ? <span className="lock-badge open">Locks in {gameLockCountdown}</span>
-                    : <span className="lock-badge locked">Locked</span>
-                  }
-                </div>
-
-                <div className="matchup">
-                  <button
-                    type="button"
-                    className={`team-btn ${myPick === game.away_team ? 'selected' : ''}`}
-                    onClick={() => handlePick(game, game.away_team)}
-                    disabled={!gameOpen}
-                  >
-                    <span className="team-name">{game.away_team}</span>
-                    <span className="team-spread">{formatSpread(-game.spread)}</span>
-                  </button>
-
-                  <div className="matchup-vs">VS</div>
-
-                  <button
-                    type="button"
-                    className={`team-btn ${myPick === game.home_team ? 'selected' : ''}`}
-                    onClick={() => handlePick(game, game.home_team)}
-                    disabled={!gameOpen}
-                  >
-                    <span className="team-name">{game.home_team}</span>
-                    <span className="team-spread">{formatSpread(game.spread)}</span>
-                  </button>
-                </div>
-
-                <div className="game-footer">
-                  {alreadySubmitted && <span className="submitted-badge">Submitted</span>}
-                </div>
-
-                {!gameOpen && (() => {
-                  const awayPickers = allPicksMap[game.id]?.[game.away_team] || []
-                  const homePickers = allPicksMap[game.id]?.[game.home_team] || []
-                  const total = awayPickers.length + homePickers.length
-                  const awayPct = total ? Math.round(awayPickers.length / total * 100) : 50
-                  const homePct = total ? 100 - awayPct : 50
+        {sortedDates.map(date => {
+          const dateGames = gamesByDate[date]
+          return (
+            <div key={date} className="slate-section">
+              <div className="slate-header">
+                <span className="slate-date">{dateLabel(date, today)}</span>
+              </div>
+              <div className="games-list">
+                {dateGames.map(game => {
+                  const myPick = picks[game.id]
+                  const alreadySubmitted = !!existingPicks[game.id]
+                  const gameOpen = isGameOpen(game)
+                  const gameLockCountdown = gameOpen ? timeUntilGameLock(game) : null
+                  const pts = ROUND_POINTS[game.round]
 
                   return (
-                    <div className="picks-breakdown">
-                      <span className="picks-breakdown-label">Who picked · {total} submitted</span>
-                      {total > 0 && (
-                        <div className="picks-split-bar">
-                          <div className="picks-split-away" style={{ width: `${awayPct}%` }} />
-                          <div className="picks-split-home" style={{ width: `${homePct}%` }} />
-                        </div>
-                      )}
-                      <div className="picks-breakdown-grid">
-                        {[
-                          { team: game.away_team, pickers: awayPickers, pct: awayPct },
-                          { team: game.home_team, pickers: homePickers, pct: homePct },
-                        ].map(({ team, pickers, pct }) => (
-                          <div key={team} className="picks-breakdown-col">
-                            <div className="picks-breakdown-team">{team}</div>
-                            <div className="picks-breakdown-stat">
-                              {pickers.length} <span className="picks-breakdown-pct">· {pct}%</span>
-                            </div>
-                            <div className="picks-breakdown-names">{nameList(pickers)}</div>
-                          </div>
-                        ))}
+                    <div key={game.id} className={`game-card ${myPick ? 'has-pick' : ''} ${!gameOpen ? 'locked' : ''}`}>
+                      <div className="game-meta">
+                        <span className="game-round">{ROUND_LABELS[game.round]} · {pts} pt{pts > 1 ? 's' : ''}</span>
+                        {gameOpen
+                          ? <span className="lock-badge open">Locks in {gameLockCountdown}</span>
+                          : <span className="lock-badge locked">Locked</span>
+                        }
                       </div>
+
+                      <div className="matchup">
+                        <button
+                          type="button"
+                          className={`team-btn ${myPick === game.away_team ? 'selected' : ''}`}
+                          onClick={() => handlePick(game, game.away_team)}
+                          disabled={!gameOpen}
+                        >
+                          <span className="team-name">{game.away_team}</span>
+                          <span className="team-spread">{formatSpread(-game.spread)}</span>
+                        </button>
+
+                        <div className="matchup-vs">VS</div>
+
+                        <button
+                          type="button"
+                          className={`team-btn ${myPick === game.home_team ? 'selected' : ''}`}
+                          onClick={() => handlePick(game, game.home_team)}
+                          disabled={!gameOpen}
+                        >
+                          <span className="team-name">{game.home_team}</span>
+                          <span className="team-spread">{formatSpread(game.spread)}</span>
+                        </button>
+                      </div>
+
+                      <div className="game-footer">
+                        {alreadySubmitted && <span className="submitted-badge">Submitted</span>}
+                      </div>
+
+                      {!gameOpen && (() => {
+                        const awayPickers = allPicksMap[game.id]?.[game.away_team] || []
+                        const homePickers = allPicksMap[game.id]?.[game.home_team] || []
+                        const total = awayPickers.length + homePickers.length
+                        const awayPct = total ? Math.round(awayPickers.length / total * 100) : 50
+                        const homePct = total ? 100 - awayPct : 50
+
+                        function nameList(names) {
+                          if (!names.length) return <span className="muted">—</span>
+                          if (names.length <= 3) return names.join(', ')
+                          return `${names.slice(0, 3).join(', ')} +${names.length - 3} more`
+                        }
+
+                        return (
+                          <div className="picks-breakdown">
+                            <span className="picks-breakdown-label">Who picked · {total} submitted</span>
+                            {total > 0 && (
+                              <div className="picks-split-bar">
+                                <div className="picks-split-away" style={{ width: `${awayPct}%` }} />
+                                <div className="picks-split-home" style={{ width: `${homePct}%` }} />
+                              </div>
+                            )}
+                            <div className="picks-breakdown-grid">
+                              {[
+                                { team: game.away_team, pickers: awayPickers, pct: awayPct },
+                                { team: game.home_team, pickers: homePickers, pct: homePct },
+                              ].map(({ team, pickers, pct }) => (
+                                <div key={team} className="picks-breakdown-col">
+                                  <div className="picks-breakdown-team">{team}</div>
+                                  <div className="picks-breakdown-stat">
+                                    {pickers.length} <span className="picks-breakdown-pct">· {pct}%</span>
+                                  </div>
+                                  <div className="picks-breakdown-names">{nameList(pickers)}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )
+                      })()}
                     </div>
                   )
-                })()}
+                })}
               </div>
-            )
-          })}
-        </div>
+            </div>
+          )
+        })}
 
         {isChampionship && slateOpen && (
           <div className="tiebreaker-card">
