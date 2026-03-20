@@ -18,6 +18,7 @@ export default function Leaderboard() {
   const { session } = useAuth()
   const [rows, setRows] = useState([])
   const [streakMap, setStreakMap] = useState({})
+  const [eligibilityMap, setEligibilityMap] = useState({}) // { [userId]: bool }
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -57,6 +58,19 @@ export default function Leaderboard() {
         sm[uid] = computeStreak(userPicks)
       }
       setStreakMap(sm)
+
+      // Eligibility: must have picked every game in the tournament
+      const totalGames = (games || []).length
+      const pickCountByUser = {}
+      for (const p of picks || []) {
+        pickCountByUser[p.user_id] = (pickCountByUser[p.user_id] || 0) + 1
+      }
+      const em = {}
+      for (const row of lb || []) {
+        em[row.user_id] = (pickCountByUser[row.user_id] || 0) === totalGames
+      }
+      setEligibilityMap(em)
+
       setLoading(false)
     }
     load()
@@ -65,7 +79,7 @@ export default function Leaderboard() {
   // Last eligible player by rank (walks from the bottom up)
   const eligibleLastId = (() => {
     for (let i = rows.length - 1; i >= 0; i--) {
-      if (rows[i].is_eligible_for_last_place) return rows[i].user_id
+      if (eligibilityMap[rows[i].user_id]) return rows[i].user_id
     }
     return null
   })()
@@ -113,7 +127,7 @@ export default function Leaderboard() {
           <tbody>
             {rows.map((row, i) => {
               const isMe = row.user_id === session?.user?.id
-              const isIneligible = !row.is_eligible_for_last_place
+              const isIneligible = !eligibilityMap[row.user_id]
               const streak = streakMap[row.user_id] ?? null
               const moneyIcon = getMoneyIcon(row, i)
 
