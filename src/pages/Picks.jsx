@@ -17,11 +17,8 @@ const ROUND_POINTS = {
   sweet_sixteen: 2, elite_eight: 3, final_four: 4, championship: 5,
 }
 
-function formatSpread(team, spread) {
-  // spread is stored relative to home team
-  // positive spread = home team is underdog; negative = home team is favored
-  const val = spread > 0 ? `+${spread}` : `${spread}`
-  return val
+function formatSpread(spread) {
+  return spread > 0 ? `+${spread}` : `${spread}`
 }
 
 function isGameOpen(game) {
@@ -94,17 +91,11 @@ export default function Picks() {
 
     try {
       const upserts = games
-        .filter(g => isGameOpen(g))
-        .map(g => ({
-          user_id: session.user.id,
-          game_id: g.id,
-          picked_team: picks[g.id] || null,
-          submitted_at: new Date().toISOString(),
-        })).filter(u => u.picked_team)
+        .filter(g => isGameOpen(g) && picks[g.id])
+        .map(g => ({ game_id: g.id, picked_team: picks[g.id] }))
 
       const { error: picksError } = await supabase
-        .from('picks')
-        .upsert(upserts, { onConflict: 'user_id,game_id' })
+        .rpc('submit_picks', { picks: upserts })
 
       if (picksError) throw picksError
 
@@ -191,7 +182,7 @@ export default function Picks() {
                   >
                     <span className="team-name">{game.away_team}</span>
                     <span className="team-spread">
-                      {formatSpread(game.away_team, -game.spread)}
+                      {formatSpread(-game.spread)}
                     </span>
                   </button>
 
@@ -205,7 +196,7 @@ export default function Picks() {
                   >
                     <span className="team-name">{game.home_team}</span>
                     <span className="team-spread">
-                      {formatSpread(game.home_team, game.spread)}
+                      {formatSpread(game.spread)}
                     </span>
                   </button>
                 </div>
