@@ -808,9 +808,15 @@ select.field-input { cursor: pointer; }
   .admin-override { flex-direction: column; align-items: stretch; }
   .admin-override .field-input.sm { width: 100%; }
 
-  /* School picker: full-width modal on mobile */
-  .sp-modal { width: 100%; max-width: 100%; border-radius: 16px 16px 0 0; position: fixed; bottom: 0; top: auto; max-height: 80vh; }
-  .sp-backdrop { align-items: flex-end; }
+  /* School picker: full-width bottom sheet, fixed height so search bar stays put */
+  .sp-backdrop { align-items: flex-end; padding: 0; }
+  .sp-modal { width: 100%; max-width: 100%; border-radius: 16px 16px 0 0; position: fixed; bottom: 0; top: auto; height: 72vh; max-height: 72vh; }
+
+  /* Inputs: 16px minimum prevents iOS auto-zoom */
+  .field-input { font-size: 1rem; }
+
+  /* Nav: push icon buttons to the right so they don't bunch against the logo */
+  .nav-theme-btn { margin-left: auto; }
 }
 
 /* ── School picker modal ─────────────────────────────────────── */
