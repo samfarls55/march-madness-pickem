@@ -1,9 +1,12 @@
+import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { SchoolPicker } from './SchoolPicker'
 
 export function Nav() {
   const { session, isAdmin, signOut } = useAuth()
   const navigate = useNavigate()
+  const [pickerOpen, setPickerOpen] = useState(false)
 
   async function handleSignOut() {
     await signOut()
@@ -13,25 +16,32 @@ export function Nav() {
   if (!session) return null
 
   return (
-    <nav className="nav">
-      <span className="nav-logo">SPREAD<span className="nav-logo-accent">NESS</span></span>
-      <div className="nav-links">
-        <NavLink to="/picks" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-          Picks
-        </NavLink>
-        <NavLink to="/my-picks" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-          My picks
-        </NavLink>
-        <NavLink to="/leaderboard" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-          Leaderboard
-        </NavLink>
-        {isAdmin && (
-          <NavLink to="/admin" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-            Admin
+    <>
+      <nav className="nav">
+        <span className="nav-logo">SPREAD<span className="nav-logo-accent">NESS</span></span>
+        <div className="nav-links">
+          <NavLink to="/picks" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+            Picks
           </NavLink>
-        )}
-      </div>
-      <button className="nav-signout" onClick={handleSignOut}>Sign out</button>
-    </nav>
+          <NavLink to="/my-picks" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+            My picks
+          </NavLink>
+          <NavLink to="/leaderboard" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+            Leaderboard
+          </NavLink>
+          {isAdmin && (
+            <NavLink to="/admin" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+              Admin
+            </NavLink>
+          )}
+        </div>
+        <button className="nav-theme-btn" onClick={() => setPickerOpen(true)} title="Choose team theme">
+          🎨
+        </button>
+        <button className="nav-signout" onClick={handleSignOut}>Sign out</button>
+      </nav>
+
+      {pickerOpen && <SchoolPicker onClose={() => setPickerOpen(false)} />}
+    </>
   )
 }
