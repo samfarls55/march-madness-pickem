@@ -140,7 +140,7 @@ export default function Leaderboard() {
               return (
                 <tr
                   key={row.user_id}
-                  className={`lb-row ${isMe ? 'lb-row-me' : ''} ${isIneligible ? 'lb-row-ineligible' : ''}`}
+                  className={`lb-row ${isMe ? 'lb-row-me' : ''}`}
                 >
                   <td className="lb-td rank">
                     {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
@@ -164,7 +164,6 @@ export default function Leaderboard() {
                       </span>
                     )}
                     {isMe && <span className="lb-you">you</span>}
-                    {isIneligible && <span className="lb-ineligible">ineligible</span>}
                   </td>
                   <td className="lb-td num pts">{row.total_points ?? 0}</td>
                   <td className="lb-td num">{row.correct_ff4 ?? 0}</td>
