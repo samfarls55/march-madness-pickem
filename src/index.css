@@ -143,7 +143,7 @@ html, body {
   justify-content: center;
   padding: 1.5rem;
   background:
-    radial-gradient(ellipse 60% 50% at 50% -10%, rgba(249,115,22,0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 50% -10%, color-mix(in srgb, var(--accent) 12%, transparent) 0%, transparent 70%),
     var(--bg);
 }
 
@@ -284,7 +284,7 @@ select.field-input { cursor: pointer; }
   padding: 1rem 1.125rem;
   transition: border-color 0.15s;
 }
-.game-card.has-pick { border-color: rgba(249,115,22,0.35); }
+.game-card.has-pick { border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
 
 .game-meta {
   display: flex;
@@ -335,7 +335,7 @@ select.field-input { cursor: pointer; }
 .team-btn:not(:disabled):hover { border-color: var(--muted); }
 .team-btn.selected {
   border-color: var(--accent);
-  background: rgba(249,115,22,0.08);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
 .team-name {
@@ -352,7 +352,7 @@ select.field-input { cursor: pointer; }
   font-size: 0.8rem;
   color: var(--muted);
 }
-.team-btn.selected .team-spread { color: var(--accent); }
+.team-btn.selected .team-spread { color: var(--muted); }
 
 .game-footer { margin-top: 0.5rem; display: flex; justify-content: flex-end; }
 
@@ -518,8 +518,8 @@ select.field-input { cursor: pointer; }
 .lb-row { border-bottom: 1px solid var(--border); transition: background 0.1s; }
 .lb-row:last-child { border-bottom: none; }
 .lb-row:hover { background: var(--surface); }
-.lb-row-me { background: rgba(249,115,22,0.06); }
-.lb-row-me:hover { background: rgba(249,115,22,0.1); }
+.lb-row-me { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+.lb-row-me:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
 
 .lb-td { padding: 0.65rem 0.75rem; vertical-align: middle; }
 .lb-td.rank { text-align: center; font-size: 1rem; }
@@ -537,9 +537,9 @@ select.field-input { cursor: pointer; }
   display: inline-block;
   font-family: var(--font-mono);
   font-size: 0.65rem;
-  background: rgba(249,115,22,0.15);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
   color: var(--accent);
-  border: 1px solid rgba(249,115,22,0.3);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
   padding: 0.05rem 0.4rem;
   border-radius: 99px;
   margin-left: 0.5rem;
