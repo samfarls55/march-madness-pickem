@@ -497,6 +497,7 @@ select.field-input { cursor: pointer; }
 .mp-none    { background: rgba(148,163,184,0.1); color: var(--muted);   border: 1px solid rgba(148,163,184,0.2); }
 .mp-score   { font-size: 0.78rem; color: var(--muted); }
 .mp-date    { font-size: 0.8rem;  color: var(--muted); }
+.mp-spread  { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); margin-left: 0.4rem; }
 
 /* ── Admin ───────────────────────────────────────────────────── */
 .admin-section { margin-bottom: 2.5rem; }

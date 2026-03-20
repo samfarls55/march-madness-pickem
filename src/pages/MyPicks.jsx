@@ -12,6 +12,11 @@ const ROUND_LABELS = {
   championship:  'Championship',
 }
 
+function spreadForPick(game, pickedTeam) {
+  const val = pickedTeam === game.home_team ? game.spread : -game.spread
+  return val > 0 ? `+${val}` : `${val}`
+}
+
 const ROUND_ORDER = [
   'first_four', 'round_of_64', 'round_of_32',
   'sweet_sixteen', 'elite_eight', 'final_four', 'championship',
@@ -130,7 +135,12 @@ export default function MyPicks() {
                       </td>
                       <td className="lb-td name mp-date">{game.date}</td>
                       <td className="lb-td name">
-                        {pick ? pick.picked_team : <span className="muted">—</span>}
+                        {pick ? (
+                          <>
+                            {pick.picked_team}
+                            <span className="mp-spread">{spreadForPick(game, pick.picked_team)}</span>
+                          </>
+                        ) : <span className="muted">—</span>}
                       </td>
                       <td className="lb-td name">{outcomeEl}</td>
                       <td className="lb-td num">
