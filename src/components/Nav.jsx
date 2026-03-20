@@ -19,6 +19,9 @@ export function Nav() {
         <NavLink to="/picks" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
           Picks
         </NavLink>
+        <NavLink to="/my-picks" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+          My picks
+        </NavLink>
         <NavLink to="/leaderboard" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
           Leaderboard
         </NavLink>
