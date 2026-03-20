@@ -52,12 +52,29 @@ function hslToHex(h, s, l) {
   return '#' + [r, g, b].map(x => Math.round(x * 255).toString(16).padStart(2, '0')).join('')
 }
 
-// Clamp lightness into [MIN_L, MAX_L] while keeping hue + saturation.
+// Clamp lightness into [MIN_L, MAX_L].
+//
+// When boosting a dark color, saturation is reduced proportionally to
+// the lightness increase. Without this, a deep maroon like Virginia
+// Tech's #630031 (H=339°, S=100%, L=19%) would become vivid pink at
+// L=35% with S still at 100%. By scaling S down by the same ratio
+// that L is scaled up, the color stays in the same perceptual family
+// (rich maroon → wine rather than maroon → pink).
 function clampColor(hex) {
   if (!hex || !/^#[0-9a-fA-F]{6}$/.test(hex)) return hex
   const [h, s, l] = hexToHsl(hex)
-  const clamped = Math.min(MAX_L, Math.max(MIN_L, l))
-  return clamped === l ? hex : hslToHex(h, s, clamped)
+
+  if (l < MIN_L) {
+    const boostRatio = MIN_L / l
+    const newS = s / boostRatio   // scale saturation down by same factor
+    return hslToHex(h, newS, MIN_L)
+  }
+
+  if (l > MAX_L) {
+    return hslToHex(h, s, MAX_L)
+  }
+
+  return hex
 }
 
 // ── Context ───────────────────────────────────────────────────────
