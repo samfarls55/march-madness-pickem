@@ -24,16 +24,13 @@ function formatSpread(team, spread) {
   return val
 }
 
-function isSlateOpen(games) {
-  if (!games.length) return false
-  const lockTime = new Date(games[0].first_game_of_slate_time)
-  return new Date() < lockTime
+function isGameOpen(game) {
+  if (game.is_locked) return false
+  return new Date() < new Date(game.tip_off_time)
 }
 
-function timeUntilLock(games) {
-  if (!games.length) return null
-  const lockTime = new Date(games[0].first_game_of_slate_time)
-  const diff = lockTime - new Date()
+function timeUntilGameLock(game) {
+  const diff = new Date(game.tip_off_time) - new Date()
   if (diff <= 0) return null
   const h = Math.floor(diff / 3600000)
   const m = Math.floor((diff % 3600000) / 60000)
@@ -53,8 +50,9 @@ export default function Picks() {
 
   const today = new Date().toISOString().split('T')[0]
   const isChampionship = games.some(g => g.round === 'championship')
-  const slateOpen = isSlateOpen(games)
-  const lockCountdown = timeUntilLock(games)
+  const slateOpen = games.some(isGameOpen)
+  const nextLockGame = games.filter(isGameOpen).sort((a, b) => new Date(a.tip_off_time) - new Date(b.tip_off_time))[0]
+  const lockCountdown = nextLockGame ? timeUntilGameLock(nextLockGame) : null
 
   useEffect(() => {
     loadTodayData()
@@ -82,9 +80,9 @@ export default function Picks() {
     setLoading(false)
   }
 
-  function handlePick(gameId, team) {
-    if (!slateOpen) return
-    setPicks(p => ({ ...p, [gameId]: team }))
+  function handlePick(game, team) {
+    if (!isGameOpen(game)) return
+    setPicks(p => ({ ...p, [game.id]: team }))
     setSaved(false)
   }
 
@@ -95,12 +93,14 @@ export default function Picks() {
     setError(null)
 
     try {
-      const upserts = games.map(g => ({
-        user_id: session.user.id,
-        game_id: g.id,
-        picked_team: picks[g.id] || null,
-        submitted_at: new Date().toISOString(),
-      })).filter(u => u.picked_team)
+      const upserts = games
+        .filter(g => isGameOpen(g))
+        .map(g => ({
+          user_id: session.user.id,
+          game_id: g.id,
+          picked_team: picks[g.id] || null,
+          submitted_at: new Date().toISOString(),
+        })).filter(u => u.picked_team)
 
       const { error: picksError } = await supabase
         .from('picks')
@@ -144,8 +144,9 @@ export default function Picks() {
     )
   }
 
-  const allPicked = games.every(g => picks[g.id])
-  const pickedCount = games.filter(g => picks[g.id]).length
+  const openGames = games.filter(isGameOpen)
+  const allPicked = openGames.every(g => picks[g.id])
+  const pickedCount = openGames.filter(g => picks[g.id]).length
 
   return (
     <div className="page-shell">
@@ -156,10 +157,10 @@ export default function Picks() {
         </div>
         {slateOpen ? (
           <div className="lock-badge open">
-            Locks in {lockCountdown}
+            Next lock in {lockCountdown}
           </div>
         ) : (
-          <div className="lock-badge locked">Locked</div>
+          <div className="lock-badge locked">All locked</div>
         )}
       </div>
 
@@ -169,20 +170,26 @@ export default function Picks() {
             const myPick = picks[game.id]
             const alreadySubmitted = !!existingPicks[game.id]
             const pts = ROUND_POINTS[game.round]
+            const gameOpen = isGameOpen(game)
+            const gameLockCountdown = gameOpen ? timeUntilGameLock(game) : null
 
             return (
-              <div key={game.id} className={`game-card ${myPick ? 'has-pick' : ''}`}>
+              <div key={game.id} className={`game-card ${myPick ? 'has-pick' : ''} ${!gameOpen ? 'locked' : ''}`}>
                 <div className="game-meta">
                   <span className="game-round">{ROUND_LABELS[game.round]}</span>
                   <span className="game-points">{pts} pt{pts > 1 ? 's' : ''}</span>
+                  {gameOpen
+                    ? <span className="lock-badge open">Locks in {gameLockCountdown}</span>
+                    : <span className="lock-badge locked">Locked</span>
+                  }
                 </div>
 
                 <div className="matchup">
                   <button
                     type="button"
                     className={`team-btn ${myPick === game.away_team ? 'selected' : ''}`}
-                    onClick={() => handlePick(game.id, game.away_team)}
-                    disabled={!slateOpen}
+                    onClick={() => handlePick(game, game.away_team)}
+                    disabled={!gameOpen}
                   >
                     <span className="team-name">{game.away_team}</span>
                     <span className="team-spread">
@@ -195,8 +202,8 @@ export default function Picks() {
                   <button
                     type="button"
                     className={`team-btn ${myPick === game.home_team ? 'selected' : ''}`}
-                    onClick={() => handlePick(game.id, game.home_team)}
-                    disabled={!slateOpen}
+                    onClick={() => handlePick(game, game.home_team)}
+                    disabled={!gameOpen}
                   >
                     <span className="team-name">{game.home_team}</span>
                     <span className="team-spread">
@@ -241,7 +248,7 @@ export default function Picks() {
         {slateOpen && (
           <div className="picks-footer">
             <span className="picks-count">
-              {pickedCount}/{games.length} picked
+              {pickedCount}/{openGames.length} picked
             </span>
             <button
               className="btn-primary"
