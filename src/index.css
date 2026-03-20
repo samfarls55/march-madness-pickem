@@ -640,3 +640,80 @@ select.field-input { cursor: pointer; }
   padding: 0.1rem 0.5rem;
   border-radius: 99px;
 }
+
+/* ── Mobile ───────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  /* Nav: move links to a fixed bottom tab bar */
+  .nav {
+    padding: 0 1rem;
+  }
+  .nav-links {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: var(--nav-h);
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 0 0.25rem;
+    gap: 0;
+    flex: none;
+  }
+  .nav-link {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0.4rem 0.25rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    border-radius: 6px;
+  }
+
+  /* Page shell: tighter padding, extra bottom space for tab bar */
+  .page-shell {
+    padding: 1.25rem 1rem 7rem;
+  }
+
+  /* Smaller page title */
+  .page-title { font-size: 1.75rem; }
+
+  /* game-meta: wrap lock badge to second line */
+  .game-meta {
+    flex-wrap: wrap;
+    row-gap: 0.4rem;
+  }
+  .game-meta .lock-badge {
+    margin-left: auto;
+  }
+
+  /* Picks footer: sticky above bottom tab bar */
+  .picks-footer {
+    position: sticky;
+    bottom: var(--nav-h);
+    background: var(--bg);
+    margin: 0 -1rem;
+    padding: 0.875rem 1rem;
+    border-top: 1px solid var(--border);
+    z-index: 10;
+  }
+
+  /* Leaderboard: hide per-round breakdown columns, keep #/Player/Pts */
+  .lb-table:not(.mp-table) th:nth-child(n+4),
+  .lb-table:not(.mp-table) td:nth-child(n+4) {
+    display: none;
+  }
+
+  /* My Picks table: hide Date column */
+  .mp-table th:nth-child(2),
+  .mp-table td:nth-child(2) {
+    display: none;
+  }
+
+  /* Admin override inputs: stack vertically */
+  .admin-override { flex-direction: column; align-items: stretch; }
+  .admin-override .field-input.sm { width: 100%; }
+}

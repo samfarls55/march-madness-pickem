@@ -78,7 +78,7 @@ export default function MyPicks() {
         <section key={round} className="admin-section">
           <h2 className="admin-section-title">{ROUND_LABELS[round]}</h2>
           <div className="lb-table-wrap">
-            <table className="lb-table">
+            <table className="lb-table mp-table">
               <thead>
                 <tr>
                   <th className="lb-th name">Matchup</th>
