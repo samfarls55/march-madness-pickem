@@ -218,27 +218,45 @@ export default function Picks() {
                   )}
                 </div>
 
-                {!gameOpen && (
-                  <div className="picks-breakdown">
-                    <span className="picks-breakdown-label">Who picked</span>
-                    <div className="picks-breakdown-grid">
-                      {[game.away_team, game.home_team].map(team => {
-                        const pickers = allPicksMap[game.id]?.[team] || []
-                        return (
+                {!gameOpen && (() => {
+                  const awayPickers = allPicksMap[game.id]?.[game.away_team] || []
+                  const homePickers = allPicksMap[game.id]?.[game.home_team] || []
+                  const total = awayPickers.length + homePickers.length
+                  const awayPct = total ? Math.round(awayPickers.length / total * 100) : 50
+                  const homePct = total ? 100 - awayPct : 50
+
+                  function nameList(names) {
+                    if (!names.length) return <span className="muted">—</span>
+                    if (names.length <= 3) return names.join(', ')
+                    return `${names.slice(0, 3).join(', ')} +${names.length - 3} more`
+                  }
+
+                  return (
+                    <div className="picks-breakdown">
+                      <span className="picks-breakdown-label">Who picked · {total} submitted</span>
+                      {total > 0 && (
+                        <div className="picks-split-bar">
+                          <div className="picks-split-away" style={{ width: `${awayPct}%` }} />
+                          <div className="picks-split-home" style={{ width: `${homePct}%` }} />
+                        </div>
+                      )}
+                      <div className="picks-breakdown-grid">
+                        {[
+                          { team: game.away_team, pickers: awayPickers, pct: awayPct },
+                          { team: game.home_team, pickers: homePickers, pct: homePct },
+                        ].map(({ team, pickers, pct }) => (
                           <div key={team} className="picks-breakdown-col">
-                            <div className="picks-breakdown-team">
-                              {team}
-                              <span className="picks-breakdown-count">{pickers.length}</span>
+                            <div className="picks-breakdown-team">{team}</div>
+                            <div className="picks-breakdown-stat">
+                              {pickers.length} <span className="picks-breakdown-pct">· {pct}%</span>
                             </div>
-                            <div className="picks-breakdown-names">
-                              {pickers.length ? pickers.join(', ') : <span className="muted">—</span>}
-                            </div>
+                            <div className="picks-breakdown-names">{nameList(pickers)}</div>
                           </div>
-                        )
-                      })}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )
+                })()}
               </div>
             )
           })}

@@ -368,8 +368,20 @@ select.field-input { cursor: pointer; }
   text-transform: uppercase;
   color: var(--muted);
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
 }
+
+.picks-split-bar {
+  display: flex;
+  height: 6px;
+  border-radius: 99px;
+  overflow: hidden;
+  background: var(--border);
+  margin-bottom: 0.625rem;
+  gap: 2px;
+}
+.picks-split-away { background: var(--accent);  border-radius: 99px; transition: width 0.4s ease; }
+.picks-split-home { background: var(--accent2); border-radius: 99px; transition: width 0.4s ease; }
 
 .picks-breakdown-grid {
   display: grid;
@@ -385,29 +397,27 @@ select.field-input { cursor: pointer; }
 
 .picks-breakdown-team {
   font-family: var(--font-head);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
+  margin-bottom: 0.15rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.picks-breakdown-stat {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
   margin-bottom: 0.25rem;
 }
-
-.picks-breakdown-count {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  font-weight: 400;
-  color: var(--accent);
-  background: rgba(249,115,22,0.12);
-  border: 1px solid rgba(249,115,22,0.2);
-  padding: 0.05rem 0.35rem;
-  border-radius: 99px;
-}
+.picks-breakdown-pct { color: var(--muted); font-size: 0.75rem; }
 
 .picks-breakdown-names {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   color: var(--muted);
   line-height: 1.4;
 }
