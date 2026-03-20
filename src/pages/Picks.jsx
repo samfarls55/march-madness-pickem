@@ -153,7 +153,7 @@ export default function Picks() {
       <div className="page-header">
         <div>
           <h1 className="page-title">Today's picks</h1>
-          <p className="page-subtitle">{ROUND_LABELS[games[0]?.round]} · {today}</p>
+          <p className="page-subtitle">{ROUND_LABELS[games[0]?.round]} · {today} · {ROUND_POINTS[games[0]?.round]} pt{ROUND_POINTS[games[0]?.round] > 1 ? 's' : ''} per pick</p>
         </div>
         {slateOpen ? (
           <div className="lock-badge open">
@@ -169,7 +169,6 @@ export default function Picks() {
           {games.map(game => {
             const myPick = picks[game.id]
             const alreadySubmitted = !!existingPicks[game.id]
-            const pts = ROUND_POINTS[game.round]
             const gameOpen = isGameOpen(game)
             const gameLockCountdown = gameOpen ? timeUntilGameLock(game) : null
 
@@ -177,7 +176,6 @@ export default function Picks() {
               <div key={game.id} className={`game-card ${myPick ? 'has-pick' : ''} ${!gameOpen ? 'locked' : ''}`}>
                 <div className="game-meta">
                   <span className="game-round">{ROUND_LABELS[game.round]}</span>
-                  <span className="game-points">{pts} pt{pts > 1 ? 's' : ''}</span>
                   {gameOpen
                     ? <span className="lock-badge open">Locks in {gameLockCountdown}</span>
                     : <span className="lock-badge locked">Locked</span>

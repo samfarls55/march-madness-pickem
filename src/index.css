@@ -288,15 +288,6 @@ select.field-input { cursor: pointer; }
   color: var(--muted);
 }
 
-.game-points {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  background: rgba(249,115,22,0.12);
-  color: var(--accent);
-  border: 1px solid rgba(249,115,22,0.25);
-  padding: 0.1rem 0.45rem;
-  border-radius: 99px;
-}
 
 .matchup {
   display: grid;
@@ -707,11 +698,12 @@ select.field-input { cursor: pointer; }
     display: none;
   }
 
-  /* My Picks table: hide Date column */
+  /* My Picks table: hide Date column and score detail — badge only */
   .mp-table th:nth-child(2),
   .mp-table td:nth-child(2) {
     display: none;
   }
+  .mp-score { display: none; }
 
   /* Admin override inputs: stack vertically */
   .admin-override { flex-direction: column; align-items: stretch; }
