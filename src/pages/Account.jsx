@@ -12,6 +12,7 @@ export default function Account() {
   const [profileForm, setProfileForm] = useState({
     name: profile?.name ?? '',
     phone_number: profile?.phone_number ?? '',
+    venmo_username: profile?.venmo_username ?? '',
   })
   const [profileMsg, setProfileMsg] = useState(null)
   const [profileLoading, setProfileLoading] = useState(false)
@@ -104,6 +105,17 @@ export default function Account() {
               placeholder="+1 (615) 555-0100"
               value={profileForm.phone_number}
               onChange={e => setProfileForm(f => ({ ...f, phone_number: e.target.value }))}
+            />
+          </label>
+          <label className="field">
+            <span className="field-label">Venmo username</span>
+            <input
+              className="field-input"
+              type="text"
+              placeholder="@username"
+              value={profileForm.venmo_username}
+              onChange={e => setProfileForm(f => ({ ...f, venmo_username: e.target.value.replace(/^@+/, '') }))}
+              required
             />
           </label>
           {profileMsg && <div className={`auth-message ${profileMsg.type}`}>{profileMsg.message}</div>}

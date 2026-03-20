@@ -7,7 +7,7 @@ export default function SignUp() {
   const { signUp, signIn } = useAuth()
   const navigate = useNavigate()
   const [mode, setMode] = useState('signup') // 'signup' | 'signin' | 'forgotpw'
-  const [form, setForm] = useState({ name: '', email: '', phone_number: '', password: '' })
+  const [form, setForm] = useState({ name: '', email: '', phone_number: '', venmo_username: '', password: '' })
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
 
@@ -98,6 +98,17 @@ export default function SignUp() {
                   placeholder="+1 (615) 555-0100"
                   value={form.phone_number}
                   onChange={update('phone_number')}
+                />
+              </label>
+              <label className="field">
+                <span className="field-label">Venmo username</span>
+                <input
+                  className="field-input"
+                  type="text"
+                  placeholder="@username"
+                  value={form.venmo_username}
+                  onChange={e => setForm(f => ({ ...f, venmo_username: e.target.value.replace(/^@+/, '') }))}
+                  required
                 />
               </label>
             </>
