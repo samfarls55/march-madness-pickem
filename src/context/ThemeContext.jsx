@@ -4,12 +4,6 @@ const ThemeContext = createContext(null)
 const STORAGE_KEY = 'spreadness-school-theme'
 
 // ── Color utilities ───────────────────────────────────────────────
-// Minimum lightness for accent colors so they stay visible on the
-// dark (#111) background. Hue + saturation are preserved so the color
-// still clearly reads as that school's color.
-const MIN_L = 35  // percent — dark enough to feel rich, light enough to see
-const MAX_L = 82  // percent — cap very pale colors so white button text stays legible
-
 function hexToHsl(hex) {
   const r = parseInt(hex.slice(1, 3), 16) / 255
   const g = parseInt(hex.slice(3, 5), 16) / 255
@@ -52,30 +46,21 @@ function hslToHex(h, s, l) {
   return '#' + [r, g, b].map(x => Math.round(x * 255).toString(16).padStart(2, '0')).join('')
 }
 
-// Clamp lightness into [MIN_L, MAX_L].
-//
-// When boosting a dark color, saturation is reduced proportionally to
-// the lightness increase. Without this, a deep maroon like Virginia
-// Tech's #630031 (H=339°, S=100%, L=19%) would become vivid pink at
-// L=35% with S still at 100%. By scaling S down by the same ratio
-// that L is scaled up, the color stays in the same perceptual family
-// (rich maroon → wine rather than maroon → pink).
-function clampColor(hex) {
-  if (!hex || !/^#[0-9a-fA-F]{6}$/.test(hex)) return hex
-  const [h, s, l] = hexToHsl(hex)
-
-  if (l < MIN_L) {
-    const boostRatio = MIN_L / l
-    const newS = s / boostRatio   // scale saturation down by same factor
-    return hslToHex(h, newS, MIN_L)
+// Derive dark surface colors from the school's primary hue.
+// Uses a subtle fraction of the hue's saturation so backgrounds feel
+// like that school's color family without competing with the accents.
+function deriveSurfaces(primaryHex) {
+  const [h, s] = hexToHsl(primaryHex)
+  const ss = Math.min(s * 0.28, 32) // ~28% of original saturation, capped at 32%
+  return {
+    bg:       hslToHex(h, ss,        5),
+    surface:  hslToHex(h, ss * 0.85, 9),
+    surface2: hslToHex(h, ss * 0.65, 13),
+    border:   hslToHex(h, ss * 0.85, 20),
   }
-
-  if (l > MAX_L) {
-    return hslToHex(h, s, MAX_L)
-  }
-
-  return hex
 }
+
+const THEMED_PROPS = ['--accent', '--accent2', '--bg', '--surface', '--surface2', '--border']
 
 // ── Context ───────────────────────────────────────────────────────
 export function ThemeProvider({ children }) {
@@ -91,12 +76,16 @@ export function ThemeProvider({ children }) {
   useEffect(() => {
     const root = document.documentElement
     if (school) {
-      root.style.setProperty('--accent',  clampColor(school.primary))
-      root.style.setProperty('--accent2', clampColor(school.secondary))
+      const surfaces = deriveSurfaces(school.primary)
+      root.style.setProperty('--accent',   school.primary)
+      root.style.setProperty('--accent2',  school.secondary)
+      root.style.setProperty('--bg',       surfaces.bg)
+      root.style.setProperty('--surface',  surfaces.surface)
+      root.style.setProperty('--surface2', surfaces.surface2)
+      root.style.setProperty('--border',   surfaces.border)
       localStorage.setItem(STORAGE_KEY, JSON.stringify(school))
     } else {
-      root.style.removeProperty('--accent')
-      root.style.removeProperty('--accent2')
+      THEMED_PROPS.forEach(p => root.style.removeProperty(p))
       localStorage.removeItem(STORAGE_KEY)
     }
   }, [school])
