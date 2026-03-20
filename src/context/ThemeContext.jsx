@@ -51,7 +51,7 @@ function hslToHex(h, s, l) {
 // like that school's color family without competing with the accents.
 function deriveSurfaces(primaryHex) {
   const [h, s] = hexToHsl(primaryHex)
-  const ss = Math.min(s * 0.28, 32) // ~28% of original saturation, capped at 32%
+  const ss = Math.min(s * 0.15, 18) // ~15% of original saturation, capped at 18%
   return {
     bg:       hslToHex(h, ss,        5),
     surface:  hslToHex(h, ss * 0.85, 9),
