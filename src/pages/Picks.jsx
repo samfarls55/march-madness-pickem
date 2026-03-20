@@ -36,9 +36,6 @@ function timeUntilGameLock(game) {
 
 function dateLabel(dateStr, today) {
   if (dateStr === today) return 'Today'
-  const todayDate = new Date(today + 'T12:00:00')
-  todayDate.setDate(todayDate.getDate() + 1)
-  if (dateStr === todayDate.toISOString().split('T')[0]) return 'Tomorrow'
   const d = new Date(dateStr + 'T12:00:00')
   return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
 }
@@ -50,7 +47,6 @@ export default function Picks() {
   const [existingPicks, setExistingPicks] = useState({})
   const [allPicksMap, setAllPicksMap] = useState({})
   const [tiebreaker, setTiebreaker] = useState('')
-  const [selectedDate, setSelectedDate] = useState(today)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -166,10 +162,6 @@ export default function Picks() {
     )
   }
 
-  // If selectedDate has no games (e.g. it's a stale today with no slate), fall back to first available
-  const activeDate = gamesByDate[selectedDate] ? selectedDate : sortedDates[0]
-  const visibleGames = gamesByDate[activeDate] || []
-
   const pickedCount = openGames.filter(g => picks[g.id]).length
   const anyPicked = pickedCount > 0
 
@@ -186,24 +178,16 @@ export default function Picks() {
         ) : null}
       </div>
 
-      {sortedDates.length > 1 && (
-        <div className="date-toggle">
-          {sortedDates.map(date => (
-            <button
-              key={date}
-              type="button"
-              className={`date-toggle-btn ${date === activeDate ? 'active' : ''}`}
-              onClick={() => setSelectedDate(date)}
-            >
-              {dateLabel(date, today)}
-            </button>
-          ))}
-        </div>
-      )}
-
       <form onSubmit={handleSubmit}>
-        <div className="games-list">
-          {visibleGames.map(game => {
+        {sortedDates.map(date => {
+          const dateGames = gamesByDate[date]
+          return (
+            <div key={date} className="slate-section">
+              <div className="slate-header">
+                <span className="slate-date">{dateLabel(date, today)}</span>
+              </div>
+              <div className="games-list">
+                {dateGames.map(game => {
                   const myPick = picks[game.id]
                   const alreadySubmitted = !!existingPicks[game.id]
                   const gameOpen = isGameOpen(game)
@@ -289,8 +273,11 @@ export default function Picks() {
                       })()}
                     </div>
                   )
-          })}
-        </div>
+                })}
+              </div>
+            </div>
+          )
+        })}
 
         {isChampionship && slateOpen && (
           <div className="tiebreaker-card">
