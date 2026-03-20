@@ -109,14 +109,17 @@ export default function Account() {
           </label>
           <label className="field">
             <span className="field-label">Venmo username</span>
-            <input
-              className="field-input"
-              type="text"
-              placeholder="@username"
-              value={profileForm.venmo_username}
-              onChange={e => setProfileForm(f => ({ ...f, venmo_username: e.target.value.replace(/^@+/, '') }))}
-              required
-            />
+            <div className="field-prefix-wrap">
+              <span className="field-prefix">@</span>
+              <input
+                className="field-input"
+                type="text"
+                placeholder="username"
+                value={profileForm.venmo_username}
+                onChange={e => setProfileForm(f => ({ ...f, venmo_username: e.target.value.replace(/^@+/, '') }))}
+                required
+              />
+            </div>
           </label>
           {profileMsg && <div className={`auth-message ${profileMsg.type}`}>{profileMsg.message}</div>}
           <button className="btn-primary acct-btn" type="submit" disabled={profileLoading}>

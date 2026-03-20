@@ -242,6 +242,36 @@ html, body {
 
 select.field-input { cursor: pointer; }
 
+/* ── Prefixed input (@username) ──────────────────────────────── */
+.field-prefix-wrap {
+  display: flex;
+  align-items: center;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color 0.15s;
+  overflow: hidden;
+}
+.field-prefix-wrap:focus-within { border-color: var(--accent); }
+
+.field-prefix {
+  padding: 0.6rem 0.25rem 0.6rem 0.75rem;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.field-prefix-wrap .field-input {
+  border: none;
+  background: none;
+  padding-left: 0.1rem;
+  flex: 1;
+  width: auto;
+}
+.field-prefix-wrap .field-input:focus { border-color: transparent; }
+
 /* ── Buttons ─────────────────────────────────────────────────── */
 .btn-primary {
   background: var(--accent);

@@ -102,14 +102,17 @@ export default function SignUp() {
               </label>
               <label className="field">
                 <span className="field-label">Venmo username</span>
-                <input
-                  className="field-input"
-                  type="text"
-                  placeholder="@username"
-                  value={form.venmo_username}
-                  onChange={e => setForm(f => ({ ...f, venmo_username: e.target.value.replace(/^@+/, '') }))}
-                  required
-                />
+                <div className="field-prefix-wrap">
+                  <span className="field-prefix">@</span>
+                  <input
+                    className="field-input"
+                    type="text"
+                    placeholder="username"
+                    value={form.venmo_username}
+                    onChange={e => setForm(f => ({ ...f, venmo_username: e.target.value.replace(/^@+/, '') }))}
+                    required
+                  />
+                </div>
               </label>
             </>
           )}
