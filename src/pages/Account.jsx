@@ -3,6 +3,13 @@ import { useAuth } from '../context/AuthContext'
 import { SchoolPicker } from '../components/SchoolPicker'
 import { useTheme } from '../context/ThemeContext'
 
+function formatPhone(val) {
+  const d = (val || '').replace(/\D/g, '').slice(0, 10)
+  if (d.length <= 3) return d
+  if (d.length <= 6) return `(${d.slice(0, 3)}) ${d.slice(3)}`
+  return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`
+}
+
 export default function Account() {
   const { session, profile, updateProfile, updateEmail, updatePassword } = useAuth()
   const { school, clearSchool } = useTheme()
@@ -10,8 +17,9 @@ export default function Account() {
 
   // Profile section
   const [profileForm, setProfileForm] = useState({
-    name: profile?.name ?? '',
-    phone_number: profile?.phone_number ?? '',
+    first_name: profile?.first_name ?? '',
+    last_name: profile?.last_name ?? '',
+    phone_number: formatPhone(profile?.phone_number ?? ''),
     venmo_username: profile?.venmo_username ?? '',
   })
   const [profileMsg, setProfileMsg] = useState(null)
@@ -87,24 +95,36 @@ export default function Account() {
       <section className="acct-section">
         <h2 className="acct-section-title">Profile</h2>
         <form className="acct-form" onSubmit={handleProfileSave}>
-          <label className="field">
-            <span className="field-label">Display name</span>
-            <input
-              className="field-input"
-              type="text"
-              value={profileForm.name}
-              onChange={e => setProfileForm(f => ({ ...f, name: e.target.value }))}
-              required
-            />
-          </label>
+          <div className="field-row">
+            <label className="field">
+              <span className="field-label">First name</span>
+              <input
+                className="field-input"
+                type="text"
+                value={profileForm.first_name}
+                onChange={e => setProfileForm(f => ({ ...f, first_name: e.target.value }))}
+                required
+              />
+            </label>
+            <label className="field">
+              <span className="field-label">Last name</span>
+              <input
+                className="field-input"
+                type="text"
+                value={profileForm.last_name}
+                onChange={e => setProfileForm(f => ({ ...f, last_name: e.target.value }))}
+                required
+              />
+            </label>
+          </div>
           <label className="field">
             <span className="field-label">Phone number</span>
             <input
               className="field-input"
               type="tel"
-              placeholder="+1 (615) 555-0100"
+              placeholder="(615) 555-0100"
               value={profileForm.phone_number}
-              onChange={e => setProfileForm(f => ({ ...f, phone_number: e.target.value }))}
+              onChange={e => setProfileForm(f => ({ ...f, phone_number: formatPhone(e.target.value) }))}
             />
           </label>
           <label className="field">

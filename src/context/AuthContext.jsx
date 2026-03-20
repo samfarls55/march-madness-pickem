@@ -31,7 +31,8 @@ export function AuthProvider({ children }) {
     setProfile(data)
   }
 
-  async function signUp({ email, password, name, phone_number, venmo_username }) {
+  async function signUp({ email, password, first_name, last_name, phone_number, venmo_username }) {
+    const name = `${first_name} ${last_name}`.trim()
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -42,7 +43,7 @@ export function AuthProvider({ children }) {
     if (data.user) {
       await supabase
         .from('users')
-        .update({ phone_number, venmo_username })
+        .update({ name, first_name, last_name, phone_number, venmo_username })
         .eq('id', data.user.id)
     }
     return data
@@ -58,12 +59,13 @@ export function AuthProvider({ children }) {
     await supabase.auth.signOut()
   }
 
-  async function updateProfile({ name, phone_number, venmo_username }) {
+  async function updateProfile({ first_name, last_name, phone_number, venmo_username }) {
     if (!session) return
+    const name = `${first_name} ${last_name}`.trim()
     await supabase.auth.updateUser({ data: { name } })
     const { error } = await supabase
       .from('users')
-      .update({ name, phone_number, venmo_username })
+      .update({ name, first_name, last_name, phone_number, venmo_username })
       .eq('id', session.user.id)
     if (error) throw error
     await fetchProfile(session.user.id)

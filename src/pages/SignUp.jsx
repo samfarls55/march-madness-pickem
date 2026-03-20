@@ -7,7 +7,14 @@ export default function SignUp() {
   const { signUp, signIn } = useAuth()
   const navigate = useNavigate()
   const [mode, setMode] = useState('signup') // 'signup' | 'signin' | 'forgotpw'
-  const [form, setForm] = useState({ name: '', email: '', phone_number: '', venmo_username: '', password: '' })
+  const [form, setForm] = useState({ first_name: '', last_name: '', email: '', phone_number: '', venmo_username: '', password: '' })
+
+  function formatPhone(val) {
+    const d = val.replace(/\D/g, '').slice(0, 10)
+    if (d.length <= 3) return d
+    if (d.length <= 6) return `(${d.slice(0, 3)}) ${d.slice(3)}`
+    return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`
+  }
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
 
@@ -79,25 +86,38 @@ export default function SignUp() {
         <form className="auth-form" onSubmit={handleSubmit}>
           {mode === 'signup' && (
             <>
-              <label className="field">
-                <span className="field-label">Full name</span>
-                <input
-                  className="field-input"
-                  type="text"
-                  placeholder="Pat Riley"
-                  value={form.name}
-                  onChange={update('name')}
-                  required
-                />
-              </label>
+              <div className="field-row">
+                <label className="field">
+                  <span className="field-label">First name</span>
+                  <input
+                    className="field-input"
+                    type="text"
+                    placeholder="Pat"
+                    value={form.first_name}
+                    onChange={update('first_name')}
+                    required
+                  />
+                </label>
+                <label className="field">
+                  <span className="field-label">Last name</span>
+                  <input
+                    className="field-input"
+                    type="text"
+                    placeholder="Riley"
+                    value={form.last_name}
+                    onChange={update('last_name')}
+                    required
+                  />
+                </label>
+              </div>
               <label className="field">
                 <span className="field-label">Phone number</span>
                 <input
                   className="field-input"
                   type="tel"
-                  placeholder="+1 (615) 555-0100"
+                  placeholder="(615) 555-0100"
                   value={form.phone_number}
-                  onChange={update('phone_number')}
+                  onChange={e => setForm(f => ({ ...f, phone_number: formatPhone(e.target.value) }))}
                 />
               </label>
               <label className="field">
