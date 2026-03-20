@@ -92,7 +92,7 @@ export default function SignUp() {
                   <input
                     className="field-input"
                     type="text"
-                    placeholder="Pat"
+                    placeholder="Jimmer"
                     value={form.first_name}
                     onChange={update('first_name')}
                     required
@@ -103,7 +103,7 @@ export default function SignUp() {
                   <input
                     className="field-input"
                     type="text"
-                    placeholder="Riley"
+                    placeholder="Fredette"
                     value={form.last_name}
                     onChange={update('last_name')}
                     required
