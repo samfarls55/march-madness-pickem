@@ -353,6 +353,65 @@ select.field-input { cursor: pointer; }
   border-radius: 99px;
 }
 
+/* ── Picks breakdown (locked games) ─────────────────────────── */
+.picks-breakdown {
+  margin-top: 0.875rem;
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--border);
+}
+
+.picks-breakdown-label {
+  font-family: var(--font-head);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.picks-breakdown-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.picks-breakdown-col {
+  background: var(--surface2);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.625rem;
+}
+
+.picks-breakdown-team {
+  font-family: var(--font-head);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.25rem;
+}
+
+.picks-breakdown-count {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--accent);
+  background: rgba(249,115,22,0.12);
+  border: 1px solid rgba(249,115,22,0.2);
+  padding: 0.05rem 0.35rem;
+  border-radius: 99px;
+}
+
+.picks-breakdown-names {
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
 /* ── Tiebreaker ──────────────────────────────────────────────── */
 .tiebreaker-card {
   background: var(--surface);

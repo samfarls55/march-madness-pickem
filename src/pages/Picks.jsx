@@ -39,6 +39,7 @@ export default function Picks() {
   const [games, setGames] = useState([])
   const [picks, setPicks] = useState({}) // { [game_id]: picked_team }
   const [existingPicks, setExistingPicks] = useState({})
+  const [allPicksMap, setAllPicksMap] = useState({}) // { [game_id]: { [team]: [name, ...] } }
   const [tiebreaker, setTiebreaker] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -57,10 +58,11 @@ export default function Picks() {
 
   async function loadTodayData() {
     setLoading(true)
-    const [{ data: todayGames }, { data: myPicks }, { data: tb }] = await Promise.all([
+    const [{ data: todayGames }, { data: myPicks }, { data: tb }, { data: allPicksData }] = await Promise.all([
       supabase.from('games').select('*').eq('date', today).order('tip_off_time'),
       supabase.from('picks').select('*').eq('user_id', session.user.id),
       supabase.from('tiebreaker').select('*').eq('user_id', session.user.id).maybeSingle(),
+      supabase.from('picks').select('game_id, picked_team, users(name), games!inner(date)').eq('games.date', today),
     ])
 
     setGames(todayGames || [])
@@ -74,6 +76,15 @@ export default function Picks() {
     setPicks(pickMap)
     setExistingPicks(existingMap)
     if (tb) setTiebreaker(String(tb.championship_total_points_guess))
+
+    const allMap = {}
+    for (const p of allPicksData || []) {
+      if (!allMap[p.game_id]) allMap[p.game_id] = {}
+      if (!allMap[p.game_id][p.picked_team]) allMap[p.game_id][p.picked_team] = []
+      allMap[p.game_id][p.picked_team].push(p.users?.name ?? 'Unknown')
+    }
+    setAllPicksMap(allMap)
+
     setLoading(false)
   }
 
@@ -206,6 +217,28 @@ export default function Picks() {
                     <span className="submitted-badge">Submitted</span>
                   )}
                 </div>
+
+                {!gameOpen && (
+                  <div className="picks-breakdown">
+                    <span className="picks-breakdown-label">Who picked</span>
+                    <div className="picks-breakdown-grid">
+                      {[game.away_team, game.home_team].map(team => {
+                        const pickers = allPicksMap[game.id]?.[team] || []
+                        return (
+                          <div key={team} className="picks-breakdown-col">
+                            <div className="picks-breakdown-team">
+                              {team}
+                              <span className="picks-breakdown-count">{pickers.length}</span>
+                            </div>
+                            <div className="picks-breakdown-names">
+                              {pickers.length ? pickers.join(', ') : <span className="muted">—</span>}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )
           })}
