@@ -62,6 +62,27 @@ export default function Leaderboard() {
     load()
   }, [])
 
+  // Last eligible player by rank (walks from the bottom up)
+  const eligibleLastId = (() => {
+    for (let i = rows.length - 1; i >= 0; i--) {
+      if (rows[i].is_eligible_for_last_place) return rows[i].user_id
+    }
+    return null
+  })()
+
+  // Returns 'prize' | 'burn' | null — at most one per player
+  function getMoneyIcon(row, i) {
+    if (i === 0) return 'prize'                            // 1st
+    if (i === 1) return 'prize'                            // 2nd
+    if (row.user_id === eligibleLastId) return 'prize'     // eligible last place
+    if (i === 5 && rows.length >= 6) return 'burn'         // 6th (≥6 players only)
+    return null
+  }
+
+  const MONEY_TITLES = {
+    prize: { 0: '1st place 💵', 1: '2nd place 💵', last: 'Last place 💵' },
+  }
+
   if (loading) return <div className="page-shell"><div className="spinner" /></div>
 
   return (
@@ -92,19 +113,34 @@ export default function Leaderboard() {
           <tbody>
             {rows.map((row, i) => {
               const isMe = row.user_id === session?.user?.id
-              const isLastPlace = !row.is_eligible_for_last_place
+              const isIneligible = !row.is_eligible_for_last_place
               const streak = streakMap[row.user_id] ?? null
+              const moneyIcon = getMoneyIcon(row, i)
+
+              const moneyTitle = moneyIcon === 'burn'
+                ? 'Going down the drain 🚽'
+                : i === 0 ? '1st place 💵'
+                : i === 1 ? '2nd place 💵'
+                : 'Last place 💵'
 
               return (
                 <tr
                   key={row.user_id}
-                  className={`lb-row ${isMe ? 'lb-row-me' : ''} ${isLastPlace ? 'lb-row-ineligible' : ''}`}
+                  className={`lb-row ${isMe ? 'lb-row-me' : ''} ${isIneligible ? 'lb-row-ineligible' : ''}`}
                 >
                   <td className="lb-td rank">
                     {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
                   </td>
                   <td className="lb-td name">
                     <span className="lb-name">{row.name}</span>
+                    {moneyIcon && (
+                      <span
+                        className={`lb-money ${moneyIcon === 'burn' ? 'lb-money-burn' : 'lb-money-prize'}`}
+                        title={moneyTitle}
+                      >
+                        {moneyIcon === 'burn' ? '🚽' : '💵'}
+                      </span>
+                    )}
                     {streak && (
                       <span
                         className={`lb-streak ${streak.correct ? 'lb-streak-hot' : 'lb-streak-cold'}`}
@@ -114,7 +150,7 @@ export default function Leaderboard() {
                       </span>
                     )}
                     {isMe && <span className="lb-you">you</span>}
-                    {isLastPlace && <span className="lb-ineligible">ineligible</span>}
+                    {isIneligible && <span className="lb-ineligible">ineligible</span>}
                   </td>
                   <td className="lb-td num pts">{row.total_points ?? 0}</td>
                   <td className="lb-td num">{row.correct_ff4 ?? 0}</td>
