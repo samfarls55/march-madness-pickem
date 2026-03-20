@@ -15,7 +15,7 @@ Built for a small friend group — sign-up is open but the pool is invite-only v
 |===
 
 | 📋 *Picks*
-| Every game shows the spread. Pick the team you think covers.
+| Every game shows the spread. Pick the team you think covers. Today's games and any upcoming slates (once lines are posted) appear together — grouped by date — so you can make picks for tomorrow without losing the ability to change today's unlocked picks.
 
 | 🔒 *Per-game locking*
 | Games lock individually at tip-off time, enforced server-side via Supabase RPC (`now()`). System clock manipulation has no effect.
