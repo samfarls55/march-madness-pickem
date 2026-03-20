@@ -1,0 +1,198 @@
+= March Spreadness
+:toc: left
+:toc-title: Contents
+:toclevels: 2
+:icons: font
+
+A private March Madness pick'em web app where players pick games *against the spread*.
+Built for a small friend group — sign-up is open but the pool is invite-only via Supabase auth.
+
+---
+
+== Features
+
+[cols="1,4", frame=none, grid=none]
+|===
+
+| 📋 *Picks*
+| Every game shows the spread. Pick the team you think covers.
+
+| 🔒 *Per-game locking*
+| Games lock individually at tip-off time, enforced server-side via Supabase RPC (`now()`). System clock manipulation has no effect.
+
+| 📊 *My Picks*
+| Full history of every pick — team, spread taken, and outcome.
+
+| 🏆 *Leaderboard*
+| Ranked standings with per-round breakdowns. Live streak badges: 🔥 win streak · 🤡 loss streak (3+ in a row).
+
+| 👀 *Who picked what*
+| Locked game cards show a split bar of how many players picked each side, with names.
+
+| ⚙️ *Account settings*
+| Edit display name, phone number, email, and password.
+
+| 🔑 *Forgot password*
+| Self-serve reset via Supabase email.
+
+| 🎨 *Team theme*
+| Pick any D1 NCAAB school (~160 schools) to skin the entire UI in that school's official colors. Backgrounds auto-derive from the primary hue so dark colors (e.g. Virginia Tech maroon) still look clean.
+
+| 🛠️ *Admin panel*
+| Add games and enter results.
+
+| 📱 *Mobile-optimized*
+| Bottom tab bar on small screens, sticky picks footer.
+
+|===
+
+---
+
+== Tech Stack
+
+[cols="1,2"]
+|===
+| Layer | Tool
+
+| Frontend
+| React 18 + Vite
+
+| Routing
+| React Router v6
+
+| Backend / DB
+| Supabase (PostgreSQL + Auth + RLS)
+
+| Styling
+| Plain CSS with custom properties
+
+| Fonts
+| Barlow Condensed, Barlow, DM Mono (Google Fonts)
+|===
+
+---
+
+== Project Structure
+
+[source]
+----
+src/
+  pages/
+    SignUp.jsx         # Sign in / sign up / forgot password
+    ResetPassword.jsx  # Password reset handler (Supabase recovery link)
+    Picks.jsx          # Main picks form with per-game locking
+    MyPicks.jsx        # User's full pick history + outcomes
+    Leaderboard.jsx    # Standings with streak badges
+    Account.jsx        # Profile, email, password, theme settings
+    Admin.jsx          # Admin: add games, enter results
+  components/
+    Nav.jsx            # Top nav with theme picker + account link
+    SchoolPicker.jsx   # Searchable D1 school color theme modal
+    ProtectedRoute.jsx
+  context/
+    AuthContext.jsx    # Supabase auth + profile helpers
+    ThemeContext.jsx   # School color theme state + CSS var injection
+  data/
+    schoolColors.js    # ~160 D1 NCAAB schools with official hex codes
+  lib/
+    supabase.js        # Supabase client
+
+march-madness/supabase/
+  submit_picks_fn.sql          # RPC: server-side tip-off enforcement on submit
+  get_locked_game_picks_fn.sql # RPC: only expose picks for locked games
+  seed-test-games.sql          # Dev seed data
+----
+
+---
+
+== Supabase Setup
+
+=== Tables
+
+[cols="1,3"]
+|===
+| Table | Key columns
+
+| `users`
+| `id`, `name`, `phone_number`
+
+| `games`
+| `id`, `date`, `tip_off_time`, `home_team`, `away_team`, `spread`, `round`, `is_locked`
+
+| `picks`
+| `id`, `user_id`, `game_id`, `picked_team`
+
+| `results`
+| `id`, `game_id`, `winner`
+
+| `leaderboard`
+| View — points + per-round correct counts per user
+|===
+
+=== RPCs
+
+Run both SQL files in the Supabase SQL editor:
+
+* *`submit_picks_fn.sql`* — validates picks against server `now()` before inserting; silently skips games that have already tipped off
+* *`get_locked_game_picks_fn.sql`* — returns pick breakdown only for games where `now() >= tip_off_time`; prevents early visibility via clock manipulation
+
+=== Row-Level Security
+
+Enable RLS on `picks`, `results`, and `users`. Users can only read/write their own picks; results and games are readable by all authenticated users.
+
+---
+
+== Environment Variables
+
+Create a `.env` file at the project root:
+
+[source,bash]
+----
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_ADMIN_EMAILS=you@example.com,other@example.com
+----
+
+`VITE_ADMIN_EMAILS` is a comma-separated list of emails that get access to the Admin tab.
+
+---
+
+== Getting Started
+
+[source,bash]
+----
+npm install
+npm run dev
+----
+
+Build for production:
+
+[source,bash]
+----
+npm run build
+npm run preview
+----
+
+---
+
+== Scoring
+
+[cols="2,1", options="header"]
+|===
+| Round | Points
+
+| First Four / Round of 64 / Round of 32
+| 1 pt
+
+| Sweet Sixteen
+| 2 pts
+
+| Elite Eight
+| 3 pts
+
+| Final Four
+| 4 pts
+
+| Championship
+| 5 pts
+|===
