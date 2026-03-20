@@ -59,13 +59,36 @@ export function AuthProvider({ children }) {
     await supabase.auth.signOut()
   }
 
+  async function updateProfile({ name, phone_number }) {
+    if (!session) return
+    // Update display name in Supabase Auth metadata
+    await supabase.auth.updateUser({ data: { name } })
+    // Update our users table
+    const { error } = await supabase
+      .from('users')
+      .update({ name, phone_number })
+      .eq('id', session.user.id)
+    if (error) throw error
+    await fetchProfile(session.user.id)
+  }
+
+  async function updateEmail(email) {
+    const { error } = await supabase.auth.updateUser({ email })
+    if (error) throw error
+  }
+
+  async function updatePassword(password) {
+    const { error } = await supabase.auth.updateUser({ password })
+    if (error) throw error
+  }
+
   // Convenience: is the current user an admin?
   // We use a simple email allow-list via env var: VITE_ADMIN_EMAILS=a@b.com,c@d.com
   const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || '').split(',').map(e => e.trim())
   const isAdmin = session?.user?.email && adminEmails.includes(session.user.email)
 
   return (
-    <AuthContext.Provider value={{ session, profile, isAdmin, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ session, profile, isAdmin, signUp, signIn, signOut, updateProfile, updateEmail, updatePassword }}>
       {children}
     </AuthContext.Provider>
   )

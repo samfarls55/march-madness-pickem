@@ -1,0 +1,206 @@
+import { useState } from 'react'
+import { useAuth } from '../context/AuthContext'
+import { SchoolPicker } from '../components/SchoolPicker'
+import { useTheme } from '../context/ThemeContext'
+
+export default function Account() {
+  const { session, profile, updateProfile, updateEmail, updatePassword } = useAuth()
+  const { school, clearSchool } = useTheme()
+  const [pickerOpen, setPickerOpen] = useState(false)
+
+  // Profile section
+  const [profileForm, setProfileForm] = useState({
+    name: profile?.name ?? '',
+    phone_number: profile?.phone_number ?? '',
+  })
+  const [profileMsg, setProfileMsg] = useState(null)
+  const [profileLoading, setProfileLoading] = useState(false)
+
+  // Email section
+  const [emailForm, setEmailForm] = useState({ email: session?.user?.email ?? '' })
+  const [emailMsg, setEmailMsg] = useState(null)
+  const [emailLoading, setEmailLoading] = useState(false)
+
+  // Password section
+  const [pwForm, setPwForm] = useState({ password: '', confirm: '' })
+  const [pwMsg, setPwMsg] = useState(null)
+  const [pwLoading, setPwLoading] = useState(false)
+
+  async function handleProfileSave(e) {
+    e.preventDefault()
+    setProfileMsg(null)
+    setProfileLoading(true)
+    try {
+      await updateProfile(profileForm)
+      setProfileMsg({ type: 'info', message: 'Profile updated.' })
+    } catch (err) {
+      setProfileMsg({ type: 'error', message: err.message })
+    } finally {
+      setProfileLoading(false)
+    }
+  }
+
+  async function handleEmailSave(e) {
+    e.preventDefault()
+    setEmailMsg(null)
+    setEmailLoading(true)
+    try {
+      await updateEmail(emailForm.email)
+      setEmailMsg({ type: 'info', message: 'Confirmation sent to your new email address.' })
+    } catch (err) {
+      setEmailMsg({ type: 'error', message: err.message })
+    } finally {
+      setEmailLoading(false)
+    }
+  }
+
+  async function handlePasswordSave(e) {
+    e.preventDefault()
+    if (pwForm.password !== pwForm.confirm) {
+      setPwMsg({ type: 'error', message: 'Passwords do not match.' })
+      return
+    }
+    setPwMsg(null)
+    setPwLoading(true)
+    try {
+      await updatePassword(pwForm.password)
+      setPwForm({ password: '', confirm: '' })
+      setPwMsg({ type: 'info', message: 'Password updated.' })
+    } catch (err) {
+      setPwMsg({ type: 'error', message: err.message })
+    } finally {
+      setPwLoading(false)
+    }
+  }
+
+  return (
+    <div className="page-shell">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Account</h1>
+          <p className="page-subtitle">{session?.user?.email}</p>
+        </div>
+      </div>
+
+      {/* ── Profile ── */}
+      <section className="acct-section">
+        <h2 className="acct-section-title">Profile</h2>
+        <form className="acct-form" onSubmit={handleProfileSave}>
+          <label className="field">
+            <span className="field-label">Display name</span>
+            <input
+              className="field-input"
+              type="text"
+              value={profileForm.name}
+              onChange={e => setProfileForm(f => ({ ...f, name: e.target.value }))}
+              required
+            />
+          </label>
+          <label className="field">
+            <span className="field-label">Phone number</span>
+            <input
+              className="field-input"
+              type="tel"
+              placeholder="+1 (615) 555-0100"
+              value={profileForm.phone_number}
+              onChange={e => setProfileForm(f => ({ ...f, phone_number: e.target.value }))}
+            />
+          </label>
+          {profileMsg && <div className={`auth-message ${profileMsg.type}`}>{profileMsg.message}</div>}
+          <button className="btn-primary acct-btn" type="submit" disabled={profileLoading}>
+            {profileLoading ? 'Saving…' : 'Save profile'}
+          </button>
+        </form>
+      </section>
+
+      {/* ── Email ── */}
+      <section className="acct-section">
+        <h2 className="acct-section-title">Email address</h2>
+        <form className="acct-form" onSubmit={handleEmailSave}>
+          <label className="field">
+            <span className="field-label">Email</span>
+            <input
+              className="field-input"
+              type="email"
+              value={emailForm.email}
+              onChange={e => setEmailForm({ email: e.target.value })}
+              required
+            />
+          </label>
+          <p className="acct-hint">A confirmation link will be sent to the new address.</p>
+          {emailMsg && <div className={`auth-message ${emailMsg.type}`}>{emailMsg.message}</div>}
+          <button className="btn-primary acct-btn" type="submit" disabled={emailLoading}>
+            {emailLoading ? 'Sending…' : 'Update email'}
+          </button>
+        </form>
+      </section>
+
+      {/* ── Password ── */}
+      <section className="acct-section">
+        <h2 className="acct-section-title">Password</h2>
+        <form className="acct-form" onSubmit={handlePasswordSave}>
+          <label className="field">
+            <span className="field-label">New password</span>
+            <input
+              className="field-input"
+              type="password"
+              placeholder="••••••••"
+              value={pwForm.password}
+              onChange={e => setPwForm(f => ({ ...f, password: e.target.value }))}
+              required
+              minLength={8}
+            />
+          </label>
+          <label className="field">
+            <span className="field-label">Confirm password</span>
+            <input
+              className="field-input"
+              type="password"
+              placeholder="••••••••"
+              value={pwForm.confirm}
+              onChange={e => setPwForm(f => ({ ...f, confirm: e.target.value }))}
+              required
+              minLength={8}
+            />
+          </label>
+          {pwMsg && <div className={`auth-message ${pwMsg.type}`}>{pwMsg.message}</div>}
+          <button className="btn-primary acct-btn" type="submit" disabled={pwLoading}>
+            {pwLoading ? 'Updating…' : 'Change password'}
+          </button>
+        </form>
+      </section>
+
+      {/* ── Theme ── */}
+      <section className="acct-section">
+        <h2 className="acct-section-title">Team theme</h2>
+        <div className="acct-theme-row">
+          <div className="acct-theme-info">
+            {school ? (
+              <>
+                <span className="acct-swatches">
+                  <span className="sp-swatch" style={{ background: school.primary }} />
+                  <span className="sp-swatch" style={{ background: school.secondary }} />
+                </span>
+                <span className="acct-theme-name">{school.name}</span>
+              </>
+            ) : (
+              <span className="acct-theme-name muted">Default theme</span>
+            )}
+          </div>
+          <div className="acct-theme-actions">
+            <button className="btn-secondary" onClick={() => setPickerOpen(true)}>
+              Change
+            </button>
+            {school && (
+              <button className="btn-ghost" onClick={clearSchool}>
+                Reset
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {pickerOpen && <SchoolPicker onClose={() => setPickerOpen(false)} />}
+    </div>
+  )
+}

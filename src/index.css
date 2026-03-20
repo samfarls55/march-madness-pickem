@@ -914,3 +914,138 @@ select.field-input { cursor: pointer; }
   color: var(--muted);
   font-size: 0.875rem;
 }
+
+/* ── Auth extras ─────────────────────────────────────────────── */
+.auth-link {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.82rem;
+  cursor: pointer;
+  text-align: center;
+  padding: 0.25rem;
+  transition: color 0.15s;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.auth-link:hover { color: var(--text); }
+
+.auth-waiting {
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 1.5rem 0;
+}
+
+/* ── Nav account icon ────────────────────────────────────────── */
+.nav-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  background: none;
+  border: none;
+  padding: 0.25rem 0.35rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+.nav-icon-btn:hover { color: var(--text); background: var(--surface2); }
+.nav-icon-btn.active { color: var(--accent); }
+
+/* ── Buttons (secondary / ghost) ─────────────────────────────── */
+.btn-secondary {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font-head);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.45rem 0.875rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+.btn-secondary:hover { border-color: var(--muted); background: var(--border); }
+
+.btn-ghost {
+  background: none;
+  color: var(--muted);
+  border: none;
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 0.45rem 0.5rem;
+  border-radius: var(--radius);
+  transition: color 0.15s;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.btn-ghost:hover { color: var(--text); }
+
+/* ── Account page ────────────────────────────────────────────── */
+.acct-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.acct-section-title {
+  font-family: var(--font-head);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 1.1rem;
+}
+
+.acct-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.acct-hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: -0.25rem;
+}
+
+.acct-btn {
+  align-self: flex-start;
+}
+
+.acct-theme-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.acct-theme-info {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.acct-swatches {
+  display: flex;
+  gap: 3px;
+}
+
+.acct-theme-name {
+  font-size: 0.9rem;
+}
+
+.acct-theme-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
