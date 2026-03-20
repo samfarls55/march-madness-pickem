@@ -2,19 +2,64 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
+// Returns null if streak < 3, else { correct: bool, count: number }
+function computeStreak(settledPicks) {
+  if (!settledPicks.length) return null
+  const last = settledPicks[settledPicks.length - 1].correct
+  let count = 0
+  for (let i = settledPicks.length - 1; i >= 0; i--) {
+    if (settledPicks[i].correct === last) count++
+    else break
+  }
+  return count >= 3 ? { correct: last, count } : null
+}
+
 export default function Leaderboard() {
   const { session } = useAuth()
   const [rows, setRows] = useState([])
+  const [streakMap, setStreakMap] = useState({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase
-      .from('leaderboard')
-      .select('*')
-      .then(({ data }) => {
-        setRows(data || [])
-        setLoading(false)
-      })
+    async function load() {
+      const [{ data: lb }, { data: picks }, { data: games }, { data: results }] = await Promise.all([
+        supabase.from('leaderboard').select('*'),
+        supabase.from('picks').select('user_id, game_id, picked_team'),
+        supabase.from('games').select('id, date, tip_off_time'),
+        supabase.from('results').select('game_id, winner'),
+      ])
+
+      setRows(lb || [])
+
+      // Build lookup maps
+      const gameMap = {}
+      for (const g of games || []) gameMap[g.id] = g
+      const resultMap = {}
+      for (const r of results || []) resultMap[r.game_id] = r.winner
+
+      // Group picks by user, keep only settled games, sort by date+time
+      const byUser = {}
+      for (const p of picks || []) {
+        const winner = resultMap[p.game_id]
+        if (!winner) continue // unsettled — skip
+        const g = gameMap[p.game_id]
+        if (!g) continue
+        if (!byUser[p.user_id]) byUser[p.user_id] = []
+        byUser[p.user_id].push({
+          ts: `${g.date}T${g.tip_off_time}`,
+          correct: p.picked_team === winner,
+        })
+      }
+
+      const sm = {}
+      for (const [uid, userPicks] of Object.entries(byUser)) {
+        userPicks.sort((a, b) => a.ts.localeCompare(b.ts))
+        sm[uid] = computeStreak(userPicks)
+      }
+      setStreakMap(sm)
+      setLoading(false)
+    }
+    load()
   }, [])
 
   if (loading) return <div className="page-shell"><div className="spinner" /></div>
@@ -48,6 +93,7 @@ export default function Leaderboard() {
             {rows.map((row, i) => {
               const isMe = row.user_id === session?.user?.id
               const isLastPlace = !row.is_eligible_for_last_place
+              const streak = streakMap[row.user_id] ?? null
 
               return (
                 <tr
@@ -59,6 +105,14 @@ export default function Leaderboard() {
                   </td>
                   <td className="lb-td name">
                     <span className="lb-name">{row.name}</span>
+                    {streak && (
+                      <span
+                        className={`lb-streak ${streak.correct ? 'lb-streak-hot' : 'lb-streak-cold'}`}
+                        title={streak.correct ? `${streak.count}-pick win streak` : `${streak.count}-pick loss streak`}
+                      >
+                        {streak.correct ? '🔥' : '🤡'}{streak.count}
+                      </span>
+                    )}
                     {isMe && <span className="lb-you">you</span>}
                     {isLastPlace && <span className="lb-ineligible">ineligible</span>}
                   </td>
