@@ -62,7 +62,7 @@ export default function Picks() {
       supabase.from('games').select('*').eq('date', today).order('tip_off_time'),
       supabase.from('picks').select('*').eq('user_id', session.user.id),
       supabase.from('tiebreaker').select('*').eq('user_id', session.user.id).maybeSingle(),
-      supabase.from('picks').select('game_id, picked_team, users(name), games!inner(date)').eq('games.date', today),
+      supabase.rpc('get_locked_game_picks', { game_date: today }),
     ])
 
     setGames(todayGames || [])
@@ -81,7 +81,7 @@ export default function Picks() {
     for (const p of allPicksData || []) {
       if (!allMap[p.game_id]) allMap[p.game_id] = {}
       if (!allMap[p.game_id][p.picked_team]) allMap[p.game_id][p.picked_team] = []
-      allMap[p.game_id][p.picked_team].push(p.users?.name ?? 'Unknown')
+      allMap[p.game_id][p.picked_team].push(p.user_name ?? 'Unknown')
     }
     setAllPicksMap(allMap)
 
