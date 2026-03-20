@@ -38,8 +38,8 @@ export default function SignUp() {
     <div className="auth-shell">
       <div className="auth-card">
         <div className="auth-header">
-          <div className="auth-logo">BRACKET<span className="accent">.</span></div>
-          <p className="auth-tagline">March Madness Pick'em — against the spread</p>
+          <div className="auth-logo">MARCH <span className="accent">SPREAD</span>NESS</div>
+          <p className="auth-tagline">march madness · against the spread</p>
         </div>
 
         <div className="auth-tabs">

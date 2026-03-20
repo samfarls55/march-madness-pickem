@@ -14,7 +14,7 @@ export function Nav() {
 
   return (
     <nav className="nav">
-      <span className="nav-logo">BRACKET<span className="nav-logo-accent">.</span></span>
+      <span className="nav-logo">SPREAD<span className="nav-logo-accent">NESS</span></span>
       <div className="nav-links">
         <NavLink to="/picks" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
           Picks
