@@ -18,7 +18,8 @@ export default function Leaderboard() {
   const { session } = useAuth()
   const [rows, setRows] = useState([])
   const [streakMap, setStreakMap] = useState({})
-  const [eligibilityMap, setEligibilityMap] = useState({}) // { [userId]: bool }
+  const [eligibilityMap, setEligibilityMap] = useState({})
+  const [missedMap, setMissedMap] = useState({}) // { [userId]: number of missed graded games }
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -66,6 +67,21 @@ export default function Leaderboard() {
         em[row.user_id] = (pickCountByUser[row.user_id] || 0) === totalGames
       }
       setEligibilityMap(em)
+
+      // Missed picks: graded games the user never picked
+      const gradedGameIds = new Set(
+        (picks || []).filter(p => p.is_correct !== null && p.is_correct !== undefined).map(p => p.game_id)
+      )
+      const gradedPicksPerUser = {}
+      for (const p of picks || []) {
+        if (!gradedGameIds.has(p.game_id)) continue
+        gradedPicksPerUser[p.user_id] = (gradedPicksPerUser[p.user_id] || 0) + 1
+      }
+      const mm = {}
+      for (const row of lb || []) {
+        mm[row.user_id] = gradedGameIds.size - (gradedPicksPerUser[row.user_id] || 0)
+      }
+      setMissedMap(mm)
 
       setLoading(false)
     }
@@ -121,6 +137,7 @@ export default function Leaderboard() {
             {rows.map((row, i) => {
               const isMe = row.user_id === session?.user?.id
               const streak = streakMap[row.user_id] ?? null
+              const missed = missedMap[row.user_id] ?? 0
               const moneyIcon = getMoneyIcon(row, i)
 
               const moneyTitle = moneyIcon === 'burn'
@@ -145,6 +162,11 @@ export default function Leaderboard() {
                         title={moneyTitle}
                       >
                         {moneyIcon === 'burn' ? '🚽' : '💵'}
+                      </span>
+                    )}
+                    {missed > 8 && (
+                      <span className="lb-streak lb-streak-ghost" title={`Missed ${missed} picks`}>
+                        👻{missed}
                       </span>
                     )}
                     {streak && (

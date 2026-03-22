@@ -626,7 +626,8 @@ select.field-input { cursor: pointer; }
   cursor: default;
 }
 .lb-streak-hot  { background: rgba(249,115,22,0.12); color: #fb923c; border: 1px solid rgba(249,115,22,0.28); }
-.lb-streak-cold { background: rgba(139,92,246,0.12);  color: #a78bfa; border: 1px solid rgba(139,92,246,0.28); }
+.lb-streak-cold  { background: rgba(139,92,246,0.12);  color: #a78bfa; border: 1px solid rgba(139,92,246,0.28); }
+.lb-streak-ghost { background: rgba(148,163,184,0.12); color: #94a3b8; border: 1px solid rgba(148,163,184,0.28); }
 
 .lb-ineligible {
   display: inline-block;
