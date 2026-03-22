@@ -77,7 +77,7 @@ export default function Picks() {
   async function loadData() {
     setLoading(true)
     const [{ data: upcomingGames }, { data: myPicks }, { data: tb }, { data: allPicksData }] = await Promise.all([
-      supabase.from('games').select('*').gte('date', today).order('date').order('tip_off_time'),
+      supabase.from('games').select('*').gte('date', today).in('round', Object.keys(ROUND_LABELS)).order('date').order('tip_off_time'),
       supabase.from('picks').select('*').eq('user_id', session.user.id),
       supabase.from('tiebreaker').select('*').eq('user_id', session.user.id).maybeSingle(),
       supabase.rpc('get_locked_game_picks', { game_date: today }),
