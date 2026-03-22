@@ -731,6 +731,10 @@ select.field-input { cursor: pointer; }
   padding: 1rem 1.125rem;
 }
 
+.admin-game-card.non-tournament { opacity: 0.45; }
+.admin-date-nav { display: flex; align-items: center; gap: 0.4rem; }
+.admin-game-toggles { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+
 .admin-game-header {
   display: flex;
   justify-content: space-between;
