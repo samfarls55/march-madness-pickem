@@ -23,11 +23,10 @@ export default function Leaderboard() {
 
   useEffect(() => {
     async function load() {
-      const [{ data: lb }, { data: picks }, { data: games }, { data: results }] = await Promise.all([
+      const [{ data: lb }, { data: picks }, { data: games }] = await Promise.all([
         supabase.from('leaderboard').select('*'),
-        supabase.from('picks').select('user_id, game_id, picked_team'),
+        supabase.from('picks').select('user_id, game_id, is_correct'),
         supabase.from('games').select('id, date, tip_off_time'),
-        supabase.from('results').select('game_id, winner'),
       ])
 
       setRows(lb || [])
@@ -35,20 +34,17 @@ export default function Leaderboard() {
       // Build lookup maps
       const gameMap = {}
       for (const g of games || []) gameMap[g.id] = g
-      const resultMap = {}
-      for (const r of results || []) resultMap[r.game_id] = r.winner
 
-      // Group picks by user, keep only settled games, sort by date+time
+      // Group picks by user, keep only graded picks, sort by date+time
       const byUser = {}
       for (const p of picks || []) {
-        const winner = resultMap[p.game_id]
-        if (!winner) continue // unsettled — skip
+        if (p.is_correct === null || p.is_correct === undefined) continue // ungraded
         const g = gameMap[p.game_id]
         if (!g) continue
         if (!byUser[p.user_id]) byUser[p.user_id] = []
         byUser[p.user_id].push({
           ts: `${g.date}T${g.tip_off_time}`,
-          correct: p.picked_team === winner,
+          correct: p.is_correct,
         })
       }
 
@@ -93,9 +89,6 @@ export default function Leaderboard() {
     return null
   }
 
-  const MONEY_TITLES = {
-    prize: { 0: '1st place 💵', 1: '2nd place 💵', last: 'Last place 💵' },
-  }
 
   if (loading) return <div className="page-shell"><div className="spinner" /></div>
 
@@ -127,7 +120,6 @@ export default function Leaderboard() {
           <tbody>
             {rows.map((row, i) => {
               const isMe = row.user_id === session?.user?.id
-              const isIneligible = !eligibilityMap[row.user_id]
               const streak = streakMap[row.user_id] ?? null
               const moneyIcon = getMoneyIcon(row, i)
 
