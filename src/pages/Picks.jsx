@@ -76,14 +76,19 @@ export default function Picks() {
 
   async function loadData() {
     setLoading(true)
-    const [{ data: upcomingGames }, { data: myPicks }, { data: tb }, { data: allPicksData }] = await Promise.all([
-      supabase.from('games').select('*').gte('date', today).not('round', 'is', null).order('date').order('tip_off_time'),
+    const [{ data: upcomingGames }, { data: myPicks }, { data: tb }, { data: allPicksData }, { data: teamRows }] = await Promise.all([
+      supabase.from('games').select('*').gte('date', today).order('date').order('tip_off_time'),
       supabase.from('picks').select('*').eq('user_id', session.user.id),
       supabase.from('tiebreaker').select('*').eq('user_id', session.user.id).maybeSingle(),
       supabase.rpc('get_locked_game_picks', { game_date: today }),
+      supabase.from('tournament_teams').select('name'),
     ])
 
-    setGames(upcomingGames || [])
+    const teamSet = new Set((teamRows || []).map(r => r.name))
+    const tournamentGames = (upcomingGames || []).filter(g =>
+      teamSet.has(g.home_team) && teamSet.has(g.away_team)
+    )
+    setGames(tournamentGames)
 
     const pickMap = {}
     const existingMap = {}
