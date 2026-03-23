@@ -649,6 +649,147 @@ select.field-input { cursor: pointer; }
   line-height: 1.6;
 }
 
+/* ── Analytics ───────────────────────────────────────────────── */
+.an-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.an-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.125rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.an-card-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-family: var(--font-head);
+}
+.an-card-value {
+  font-size: 1.9rem;
+  font-weight: 800;
+  font-family: var(--font-head);
+  color: var(--accent);
+  line-height: 1.1;
+}
+.an-card-sub {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+
+.an-section { margin-bottom: 2rem; }
+.an-section-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-family: var(--font-head);
+  margin-bottom: 0.75rem;
+}
+
+/* Player form */
+.an-form-table { display: flex; flex-direction: column; gap: 0.5rem; }
+.an-form-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 0.875rem;
+}
+.an-form-name { font-weight: 500; font-size: 0.9rem; }
+.an-form-dots { display: flex; gap: 0.3rem; }
+.an-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.an-dot.correct { background: color-mix(in srgb, var(--accent) 80%, #22c55e); }
+.an-dot.wrong   { background: #ef4444; opacity: 0.75; }
+.an-dot.empty   { background: var(--border); }
+.an-form-pct  { font-size: 0.85rem; font-weight: 700; font-family: var(--font-mono); min-width: 3rem; text-align: right; }
+.an-form-overall { font-size: 0.75rem; font-family: var(--font-mono); min-width: 5.5rem; text-align: right; }
+
+/* Round bars */
+.an-rounds { display: flex; flex-direction: column; gap: 0.5rem; }
+.an-round-row {
+  display: grid;
+  grid-template-columns: 9rem 1fr 3rem 3rem;
+  align-items: center;
+  gap: 0.75rem;
+}
+.an-round-label { font-size: 0.82rem; font-weight: 500; }
+.an-bar-wrap {
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.an-bar {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+.an-round-pct { font-size: 0.82rem; font-weight: 700; font-family: var(--font-mono); text-align: right; }
+.an-round-sub { font-size: 0.72rem; font-family: var(--font-mono); text-align: right; }
+
+/* Consensus */
+.an-consensus { display: flex; flex-direction: column; gap: 0.75rem; }
+.an-consensus-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.875rem 1rem;
+}
+.an-consensus-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+.an-consensus-round { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); font-family: var(--font-head); }
+.an-verdict { font-size: 0.72rem; font-weight: 700; font-family: var(--font-head); letter-spacing: 0.05em; text-transform: uppercase; }
+.an-verdict.right { color: color-mix(in srgb, var(--accent) 80%, #22c55e); }
+.an-verdict.wrong { color: #ef4444; }
+.an-consensus-matchup {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.88rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+.an-winner { color: var(--accent); font-weight: 700; }
+.an-split-bar {
+  height: 5px;
+  border-radius: 3px;
+  overflow: hidden;
+  display: flex;
+  margin-bottom: 0.3rem;
+}
+.an-split-away { background: color-mix(in srgb, var(--accent) 60%, transparent); height: 100%; }
+.an-split-home { background: var(--accent); height: 100%; }
+.an-split-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--text);
+}
+
 /* ── My Picks ────────────────────────────────────────────────── */
 .mp-outcome {
   font-size: 0.72rem;

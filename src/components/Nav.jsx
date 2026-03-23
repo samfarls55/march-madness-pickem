@@ -29,6 +29,9 @@ export function Nav() {
           <NavLink to="/my-picks" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
             My picks
           </NavLink>
+          <NavLink to="/analytics" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+            Analytics
+          </NavLink>
           {isAdmin && (
             <NavLink to="/admin" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
               Admin

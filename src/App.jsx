@@ -10,6 +10,7 @@ import MyPicks from './pages/MyPicks'
 import Leaderboard from './pages/Leaderboard'
 import Admin from './pages/Admin'
 import Account from './pages/Account'
+import Analytics from './pages/Analytics'
 
 export default function App() {
   return (
@@ -28,6 +29,9 @@ export default function App() {
           } />
           <Route path="/leaderboard" element={
             <ProtectedRoute><Leaderboard /></ProtectedRoute>
+          } />
+          <Route path="/analytics" element={
+            <ProtectedRoute><Analytics /></ProtectedRoute>
           } />
           <Route path="/account" element={
             <ProtectedRoute><Account /></ProtectedRoute>
