@@ -20,14 +20,14 @@ export function Nav() {
       <nav className="nav">
         <span className="nav-logo">SPREAD<span className="nav-logo-accent">NESS</span></span>
         <div className="nav-links">
+          <NavLink to="/leaderboard" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+            Leaderboard
+          </NavLink>
           <NavLink to="/picks" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-            Picks
+            Make picks
           </NavLink>
           <NavLink to="/my-picks" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
             My picks
-          </NavLink>
-          <NavLink to="/leaderboard" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-            Leaderboard
           </NavLink>
           {isAdmin && (
             <NavLink to="/admin" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
