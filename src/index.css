@@ -444,10 +444,9 @@ select.field-input { cursor: pointer; }
   overflow: hidden;
   background: var(--border);
   margin-bottom: 0.625rem;
-  gap: 2px;
 }
-.picks-split-away { background: var(--accent);  border-radius: 99px; transition: width 0.4s ease; }
-.picks-split-home { background: var(--accent2); border-radius: 99px; transition: width 0.4s ease; }
+.picks-split-away { background: var(--accent);  transition: width 0.4s ease; }
+.picks-split-home { background: var(--accent2); transition: width 0.4s ease; }
 
 .picks-breakdown-grid {
   display: grid;
