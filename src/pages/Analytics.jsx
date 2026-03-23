@@ -85,39 +85,7 @@ export default function Analytics() {
         else            { dogPicks++; if (p.is_correct) dogCorrect++ }
       }
 
-      // ── Pick consensus (completed games) ─────────────────────
-      const gamePickMap = {}
-      for (const p of picks || []) {
-        const g = gameMap[p.game_id]
-        if (!g) continue
-        if (!gamePickMap[g.id]) gamePickMap[g.id] = { game: g, home: 0, away: 0 }
-        if (p.picked_team === g.home_team) gamePickMap[g.id].home++
-        else gamePickMap[g.id].away++
-      }
-
-      const consensus = Object.values(gamePickMap)
-        .filter(({ game }) => {
-          // only games that are fully graded (any pick for this game has is_correct set)
-          return allGraded.some(p => p.game_id === game.id)
-        })
-        .map(({ game, home, away }) => {
-          const total    = home + away
-          const homePct  = total > 0 ? Math.round(home / total * 100) : 50
-          const awayPct  = 100 - homePct
-          // Determine winner from graded picks (correct pick = winner)
-          const winnerPick = allGraded.find(p => p.game_id === game.id && p.is_correct)
-          const winner   = winnerPick?.picked_team ?? null
-          const majority = homePct >= 50 ? game.home_team : game.away_team
-          return { game, home: { count: home, pct: homePct }, away: { count: away, pct: awayPct }, winner, crowdRight: winner ? majority === winner : null, total }
-        })
-        .filter(c => c.winner)
-        .sort((a, b) => `${b.game.date}T${b.game.tip_off_time}`.localeCompare(`${a.game.date}T${a.game.tip_off_time}`))
-
-      const crowdCorrectRate = consensus.length > 0
-        ? Math.round(consensus.filter(c => c.crowdRight).length / consensus.length * 100)
-        : null
-
-      setData({ groupAccuracy, totalPicks, totalCorrect, hottestPlayer, playerStats, roundStats, favPicks, favCorrect, dogPicks, dogCorrect, consensus, crowdCorrectRate })
+      setData({ groupAccuracy, totalPicks, totalCorrect, hottestPlayer, playerStats, roundStats, favPicks, favCorrect, dogPicks, dogCorrect })
       setLoading(false)
     }
     load()
@@ -126,7 +94,7 @@ export default function Analytics() {
   if (loading) return <div className="page-shell"><div className="spinner" /></div>
   if (!data)   return null
 
-  const { groupAccuracy, totalPicks, totalCorrect, hottestPlayer, playerStats, roundStats, favPicks, favCorrect, dogPicks, dogCorrect, consensus, crowdCorrectRate } = data
+  const { groupAccuracy, totalPicks, totalCorrect, hottestPlayer, playerStats, roundStats, favPicks, favCorrect, dogPicks, dogCorrect } = data
   const favAccuracy = favPicks > 0 ? Math.round(favCorrect / favPicks * 100) : null
   const dogAccuracy = dogPicks > 0 ? Math.round(dogCorrect / dogPicks * 100) : null
 
@@ -146,13 +114,6 @@ export default function Analytics() {
           <span className="an-card-value">{groupAccuracy}%</span>
           <span className="an-card-sub">{totalCorrect} of {totalPicks} correct</span>
         </div>
-        {crowdCorrectRate !== null && (
-          <div className="an-card">
-            <span className="an-card-label">Crowd picks</span>
-            <span className="an-card-value">{crowdCorrectRate}%</span>
-            <span className="an-card-sub">majority won</span>
-          </div>
-        )}
         {hottestPlayer && (
           <div className="an-card">
             <span className="an-card-label">Hottest player</span>
@@ -229,37 +190,6 @@ export default function Analytics() {
         </section>
       )}
 
-      {/* ── Pick consensus ── */}
-      {consensus.length > 0 && (
-        <section className="an-section">
-          <h2 className="an-section-title">Pick consensus</h2>
-          <div className="an-consensus">
-            {consensus.map(({ game, home, away, winner, crowdRight }) => (
-              <div key={game.id} className="an-consensus-card">
-                <div className="an-consensus-header">
-                  <span className="an-consensus-round">{ROUND_LABELS[game.round]}</span>
-                  <span className={`an-verdict ${crowdRight ? 'right' : 'wrong'}`}>
-                    {crowdRight ? 'Crowd right' : 'Crowd wrong'}
-                  </span>
-                </div>
-                <div className="an-consensus-matchup">
-                  <span className={away.team === winner ? 'an-winner' : ''}>{game.away_team}</span>
-                  <span className="muted">vs</span>
-                  <span className={home.team === winner ? 'an-winner' : ''}>{game.home_team}</span>
-                </div>
-                <div className="an-split-bar">
-                  <div className="an-split-away" style={{ width: `${away.pct}%` }} />
-                  <div className="an-split-home" style={{ width: `${home.pct}%` }} />
-                </div>
-                <div className="an-split-labels">
-                  <span>{away.pct}%<span className="muted"> ({away.count})</span></span>
-                  <span>{home.pct}%<span className="muted"> ({home.count})</span></span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   )
 }
