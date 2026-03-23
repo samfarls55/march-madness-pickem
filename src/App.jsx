@@ -35,7 +35,7 @@ export default function App() {
           <Route path="/admin" element={
             <ProtectedRoute adminOnly><Admin /></ProtectedRoute>
           } />
-          <Route path="*" element={<Navigate to="/picks" replace />} />
+          <Route path="*" element={<Navigate to="/leaderboard" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
