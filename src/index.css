@@ -722,6 +722,32 @@ select.field-input { cursor: pointer; }
 .an-dist-swatch.chalk { background: var(--accent); }
 .an-dist-swatch.dog   { background: var(--accent2); }
 
+.an-view-toggle {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+  gap: 3px;
+  margin-bottom: 1.5rem;
+  width: fit-content;
+}
+.an-view-btn {
+  padding: 0.4rem 1.5rem;
+  border-radius: 6px;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-family: var(--font-head);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.an-view-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
 .an-section { margin-bottom: 2rem; }
 .an-section-title {
   font-size: 0.78rem;
