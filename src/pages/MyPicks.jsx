@@ -247,7 +247,7 @@ export default function MyPicks() {
       {/* ── 3. Points + Accuracy per round chart ── */}
       {chartRounds.length > 0 && (
         <section className="an-section">
-          <h2 className="an-section-title">By round</h2>
+          <h2 className="an-section-title">Accuracy by round</h2>
           <div className="mp-chart-wrap">
             <RoundChart chartRounds={chartRounds} accuracyByRound={accuracyByRound} />
           </div>
