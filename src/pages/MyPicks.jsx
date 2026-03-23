@@ -61,16 +61,29 @@ function RoundChart({ chartRounds, pointsByRound, accuracyByRound }) {
       {accPath && <path d={accPath} fill="none" stroke="var(--accent2)" strokeWidth="2" strokeLinejoin="round" />}
       {ptPath  && <path d={ptPath}  fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinejoin="round" />}
       {chartRounds.map((r, i) => {
-        const ax = cx(i), ay = accY(r), px = cx(i), py = ptY(r)
+        const ax = cx(i), ay = accY(r), py = ptY(r)
         const acc = accuracyByRound[r] || 0
         const pts = pointsByRound[r] || 0
+
+        // Separate labels when lines converge
+        const MIN_SEP = 13
+        let accLY = ay - 10, ptLY = py - 10
+        const sep = ptLY - accLY
+        if (Math.abs(sep) < MIN_SEP) {
+          const push = (MIN_SEP - Math.abs(sep)) / 2 + 1
+          if (sep >= 0) { accLY -= push; ptLY += push }
+          else          { ptLY  -= push; accLY += push }
+        }
+        accLY = Math.max(accLY, PAD.top - 14)
+        ptLY  = Math.max(ptLY,  PAD.top - 14)
+
         return (
           <g key={r}>
             <title>{ROUND_LABELS[r]}: {acc}% accuracy, {pts} pts</title>
             <circle cx={ax} cy={ay} r={4} fill="var(--accent2)" />
-            <text x={ax} y={Math.max(ay - 8, PAD.top - 12)} textAnchor="middle" fontSize="10" fill="var(--accent2)" fontFamily="monospace">{acc}%</text>
-            <circle cx={px} cy={py} r={4} fill="var(--accent)" />
-            <text x={px} y={Math.max(py - 8, PAD.top - 24)} textAnchor="middle" fontSize="10" fill="var(--accent)" fontFamily="monospace">{pts}pt</text>
+            <text x={ax} y={accLY} textAnchor="middle" fontSize="10" fill="var(--accent2)" fontFamily="monospace">{acc}%</text>
+            <circle cx={ax} cy={py} r={4} fill="var(--accent)" />
+            <text x={ax} y={ptLY}  textAnchor="middle" fontSize="10" fill="var(--accent)"  fontFamily="monospace">{pts}pt</text>
             <text x={ax} y={H - 6} textAnchor="middle" fontSize="10" fill="var(--muted)">{ROUND_SHORT[r]}</text>
           </g>
         )
