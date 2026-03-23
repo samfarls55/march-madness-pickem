@@ -828,6 +828,26 @@ select.field-input { cursor: pointer; }
 .mp-date    { font-size: 0.8rem;  color: var(--muted); }
 .mp-spread  { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); margin-left: 0.4rem; }
 
+.mp-round-select-wrap {
+  margin-bottom: 1rem;
+}
+.mp-round-select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font-head);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.5rem 0.875rem;
+  cursor: pointer;
+  appearance: auto;
+}
+.mp-round-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
 /* ── Admin ───────────────────────────────────────────────────── */
 .admin-section { margin-bottom: 2.5rem; }
 
