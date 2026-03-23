@@ -155,14 +155,18 @@ export default function Analytics() {
           <div className="an-card">
             <span className="an-card-label">Chalk picks</span>
             <span className="an-card-value">{favAccuracy}%</span>
-            <span className="an-card-sub">{favCorrect}/{favPicks} correct · {Math.round(favPicks / (favPicks + dogPicks) * 100)}% of picks</span>
+            <span className="an-card-descriptor">accuracy on favorites</span>
+            <span className="an-card-sub">{favCorrect} of {favPicks} correct</span>
+            <span className="an-card-sub">{Math.round(favPicks / (favPicks + dogPicks) * 100)}% of all picks taken on chalk</span>
           </div>
         )}
         {dogAccuracy !== null && (
           <div className="an-card">
             <span className="an-card-label">Dog picks</span>
             <span className="an-card-value">{dogAccuracy}%</span>
-            <span className="an-card-sub">{dogCorrect}/{dogPicks} correct · {Math.round(dogPicks / (favPicks + dogPicks) * 100)}% of picks</span>
+            <span className="an-card-descriptor">accuracy on underdogs</span>
+            <span className="an-card-sub">{dogCorrect} of {dogPicks} correct</span>
+            <span className="an-card-sub">{Math.round(dogPicks / (favPicks + dogPicks) * 100)}% of all picks taken on dogs</span>
           </div>
         )}
       </div>

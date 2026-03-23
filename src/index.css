@@ -685,6 +685,14 @@ select.field-input { cursor: pointer; }
   color: var(--muted);
   font-family: var(--font-mono);
 }
+.an-card-descriptor {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-family: var(--font-head);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.15rem;
+}
 
 .an-section { margin-bottom: 2rem; }
 .an-section-title {
