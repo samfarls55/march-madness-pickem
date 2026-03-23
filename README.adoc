@@ -38,6 +38,9 @@ Built for a small friend group — sign-up is open but the pool is invite-only v
 | 🎨 *Team theme*
 | Pick any D1 NCAAB school (~160 schools) to skin the entire UI in that school's official colors. Backgrounds auto-derive from the primary hue so dark colors (e.g. Virginia Tech maroon) still look clean.
 
+| 📈 *Analytics*
+| Group accuracy overall, on chalk, and on dogs shown as a stat strip. Pick distribution (% on chalk vs dogs). Rolling form over the last 10 graded games — top 5 hottest and bottom 5 coldest pickers with dot indicators (green=correct, red=wrong, grey=missed). Accuracy by round as a bar chart.
+
 | 🛠️ *Admin panel*
 | Add games and enter results.
 
