@@ -151,6 +151,20 @@ export default function Analytics() {
           <span className="an-card-value">{groupAccuracy}%</span>
           <span className="an-card-sub">{totalCorrect} of {totalPicks} correct</span>
         </div>
+        {favAccuracy !== null && (
+          <div className="an-card">
+            <span className="an-card-label">Chalk picks</span>
+            <span className="an-card-value">{favAccuracy}%</span>
+            <span className="an-card-sub">{favCorrect}/{favPicks} correct · {Math.round(favPicks / (favPicks + dogPicks) * 100)}% of picks</span>
+          </div>
+        )}
+        {dogAccuracy !== null && (
+          <div className="an-card">
+            <span className="an-card-label">Dog picks</span>
+            <span className="an-card-value">{dogAccuracy}%</span>
+            <span className="an-card-sub">{dogCorrect}/{dogPicks} correct · {Math.round(dogPicks / (favPicks + dogPicks) * 100)}% of picks</span>
+          </div>
+        )}
       </div>
 
       {/* ── Hot / Cold pickers ── */}
@@ -203,28 +217,6 @@ export default function Analytics() {
         </section>
       )}
 
-      {/* ── Spread tendency ── */}
-      {(favPicks > 0 || dogPicks > 0) && (
-        <section className="an-section">
-          <h2 className="an-section-title">Favorites vs. underdogs</h2>
-          <div className="an-cards">
-            {favAccuracy !== null && (
-              <div className="an-card">
-                <span className="an-card-label">Chalk picks</span>
-                <span className="an-card-value">{favAccuracy}%</span>
-                <span className="an-card-sub">{favCorrect}/{favPicks} correct · {Math.round(favPicks / (favPicks + dogPicks) * 100)}% of picks</span>
-              </div>
-            )}
-            {dogAccuracy !== null && (
-              <div className="an-card">
-                <span className="an-card-label">Dog picks</span>
-                <span className="an-card-value">{dogAccuracy}%</span>
-                <span className="an-card-sub">{dogCorrect}/{dogPicks} correct · {Math.round(dogPicks / (favPicks + dogPicks) * 100)}% of picks</span>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
     </div>
   )
 }
