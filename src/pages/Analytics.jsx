@@ -16,8 +16,6 @@ const ROUND_ORDER = [
   'sweet_sixteen', 'elite_eight', 'final_four', 'championship',
 ]
 
-const RANK_MEDALS = ['🥇', '🥈', '🥉', '4', '5']
-
 export default function Analytics() {
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState(null)
@@ -42,33 +40,46 @@ export default function Analytics() {
       const totalCorrect = allGraded.filter(p => p.is_correct).length
       const groupAccuracy = totalPicks > 0 ? Math.round(totalCorrect / totalPicks * 100) : 0
 
-      // ── Hot pickers — games that tipped off in the last hour ──
-      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000)
-      const recentGameIds = new Set(
-        (games || [])
-          .filter(g => new Date(g.tip_off_time) >= oneHourAgo)
-          .map(g => g.id)
-      )
-      const recentGraded = allGraded.filter(p => recentGameIds.has(p.game_id))
+      // ── Last 10 graded games (by tip_off_time) ────────────────
+      const gradedGameIds = [...new Set(allGraded.map(p => p.game_id))]
+        .filter(id => gameMap[id])
+        .sort((a, b) =>
+          `${gameMap[a].date}T${gameMap[a].tip_off_time}`
+            .localeCompare(`${gameMap[b].date}T${gameMap[b].tip_off_time}`)
+        )
+      const last10GameIds = gradedGameIds.slice(-10)
 
-      const recentByUser = {}
-      for (const p of recentGraded) {
-        if (!recentByUser[p.user_id]) recentByUser[p.user_id] = []
-        recentByUser[p.user_id].push(p)
+      // Pick lookup: { [userId]: { [gameId]: true|false } }
+      const pickLookup = {}
+      for (const p of picks || []) {
+        if (!pickLookup[p.user_id]) pickLookup[p.user_id] = {}
+        pickLookup[p.user_id][p.game_id] = p.is_correct
       }
-      const hotPickers = Object.entries(recentByUser)
-        .map(([uid, userPicks]) => {
-          const correct = userPicks.filter(p => p.is_correct).length
+
+      // Per-user form — missed picks = loss (grey dot)
+      const playerForm = (users || [])
+        .map(u => {
+          const uPicks = pickLookup[u.id] || {}
+          const dots = last10GameIds.map(gid => {
+            if (!(gid in uPicks)) return 'missed'
+            return uPicks[gid] ? 'correct' : 'wrong'
+          })
+          const correct = dots.filter(d => d === 'correct').length
           return {
-            userId: uid,
-            name: userMap[uid] || 'Unknown',
-            total: userPicks.length,
+            userId: u.id,
+            name: u.name,
+            dots,
             correct,
-            accuracy: Math.round(correct / userPicks.length * 100),
+            total: last10GameIds.length,
+            accuracy: last10GameIds.length > 0 ? Math.round(correct / last10GameIds.length * 100) : 0,
           }
         })
+        .filter(p => p.total > 0)
         .sort((a, b) => b.accuracy - a.accuracy || b.correct - a.correct)
-        .slice(0, 5)
+
+      const top5    = playerForm.slice(0, 5)
+      const topIds  = new Set(top5.map(p => p.userId))
+      const bottom5 = [...playerForm].reverse().filter(p => !topIds.has(p.userId)).slice(0, 5)
 
       // ── Round accuracy ────────────────────────────────────────
       const roundStats = {}
@@ -93,7 +104,7 @@ export default function Analytics() {
 
       const uniquePlayers = new Set(allGraded.map(p => p.user_id)).size
 
-      setData({ groupAccuracy, totalPicks, totalCorrect, uniquePlayers, hotPickers, recentGameIds, roundStats, favPicks, favCorrect, dogPicks, dogCorrect })
+      setData({ groupAccuracy, totalPicks, totalCorrect, uniquePlayers, top5, bottom5, last10Count: last10GameIds.length, roundStats, favPicks, favCorrect, dogPicks, dogCorrect })
       setLoading(false)
     }
     load()
@@ -102,9 +113,27 @@ export default function Analytics() {
   if (loading) return <div className="page-shell"><div className="spinner" /></div>
   if (!data)   return null
 
-  const { groupAccuracy, totalPicks, totalCorrect, uniquePlayers, hotPickers, recentGameIds, roundStats, favPicks, favCorrect, dogPicks, dogCorrect } = data
+  const { groupAccuracy, totalPicks, totalCorrect, uniquePlayers, top5, bottom5, last10Count, roundStats, favPicks, favCorrect, dogPicks, dogCorrect } = data
   const favAccuracy = favPicks > 0 ? Math.round(favCorrect / favPicks * 100) : null
   const dogAccuracy = dogPicks > 0 ? Math.round(dogCorrect / dogPicks * 100) : null
+
+  function FormRow({ player, hot }) {
+    return (
+      <div className="an-hot-row">
+        <span className="an-hot-name">{player.name}</span>
+        <div className="an-form-dots">
+          {player.dots.map((d, i) => (
+            <span key={i} className={`an-dot ${d}`} title={d === 'missed' ? 'No pick submitted' : d === 'correct' ? 'Correct' : 'Wrong'} />
+          ))}
+        </div>
+        <div className="an-hot-bar-wrap">
+          <div className={`an-hot-bar ${hot ? 'hot' : 'cold'}`} style={{ width: `${player.accuracy}%` }} />
+        </div>
+        <span className="an-hot-pct">{player.accuracy}%</span>
+        <span className="an-hot-sub muted">{player.correct}/{player.total}</span>
+      </div>
+    )
+  }
 
   return (
     <div className="page-shell">
@@ -124,30 +153,33 @@ export default function Analytics() {
         </div>
       </div>
 
-      {/* ── Hot pickers ── */}
-      <section className="an-section">
-        <h2 className="an-section-title">
-          🔥 Hottest pickers — last hour
-          {recentGameIds.size > 0 && <span className="an-section-meta">{recentGameIds.size} game{recentGameIds.size !== 1 ? 's' : ''}</span>}
-        </h2>
-        {hotPickers.length === 0 ? (
-          <p className="muted" style={{ fontSize: '0.88rem' }}>No graded games in the last hour.</p>
-        ) : (
-          <div className="an-hot-list">
-            {hotPickers.map((p, i) => (
-              <div key={p.userId} className="an-hot-row">
-                <span className="an-hot-rank">{RANK_MEDALS[i]}</span>
-                <span className="an-hot-name">{p.name}</span>
-                <div className="an-hot-bar-wrap">
-                  <div className="an-hot-bar" style={{ width: `${p.accuracy}%` }} />
-                </div>
-                <span className="an-hot-pct">{p.accuracy}%</span>
-                <span className="an-hot-sub muted">{p.correct}/{p.total}</span>
+      {/* ── Hot / Cold pickers ── */}
+      {last10Count > 0 && (
+        <section className="an-section">
+          <h2 className="an-section-title">
+            Form — last {last10Count} game{last10Count !== 1 ? 's' : ''}
+            <span className="an-section-meta">missed picks count as a loss</span>
+          </h2>
+
+          {top5.length > 0 && (
+            <>
+              <p className="an-subsection-label">🔥 Top 5</p>
+              <div className="an-hot-list">
+                {top5.map(p => <FormRow key={p.userId} player={p} hot={true} />)}
               </div>
-            ))}
-          </div>
-        )}
-      </section>
+            </>
+          )}
+
+          {bottom5.length > 0 && (
+            <>
+              <p className="an-subsection-label" style={{ marginTop: '1rem' }}>🧊 Bottom 5</p>
+              <div className="an-hot-list">
+                {bottom5.map(p => <FormRow key={p.userId} player={p} hot={false} />)}
+              </div>
+            </>
+          )}
+        </section>
+      )}
 
       {/* ── Round accuracy ── */}
       {Object.keys(roundStats).length > 0 && (
