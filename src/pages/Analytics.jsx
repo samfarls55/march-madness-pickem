@@ -144,32 +144,44 @@ export default function Analytics() {
         </div>
       </div>
 
-      {/* ── Pulse cards ── */}
+      {/* ── Accuracy cards ── */}
       <div className="an-cards">
         <div className="an-card">
-          <span className="an-card-label">Group accuracy</span>
+          <span className="an-card-label">Overall accuracy</span>
           <span className="an-card-value">{groupAccuracy}%</span>
           <span className="an-card-sub">{totalCorrect} of {totalPicks} correct</span>
         </div>
         {favAccuracy !== null && (
           <div className="an-card">
-            <span className="an-card-label">Chalk picks</span>
+            <span className="an-card-label">Accuracy on chalk</span>
             <span className="an-card-value">{favAccuracy}%</span>
-            <span className="an-card-descriptor">accuracy on favorites</span>
             <span className="an-card-sub">{favCorrect} of {favPicks} correct</span>
-            <span className="an-card-sub">{Math.round(favPicks / (favPicks + dogPicks) * 100)}% of all picks taken on chalk</span>
           </div>
         )}
         {dogAccuracy !== null && (
           <div className="an-card">
-            <span className="an-card-label">Dog picks</span>
+            <span className="an-card-label">Accuracy on dogs</span>
             <span className="an-card-value">{dogAccuracy}%</span>
-            <span className="an-card-descriptor">accuracy on underdogs</span>
             <span className="an-card-sub">{dogCorrect} of {dogPicks} correct</span>
-            <span className="an-card-sub">{Math.round(dogPicks / (favPicks + dogPicks) * 100)}% of all picks taken on dogs</span>
           </div>
         )}
       </div>
+
+      {/* ── Pick distribution cards ── */}
+      {(favPicks + dogPicks) > 0 && (
+        <div className="an-cards">
+          <div className="an-card">
+            <span className="an-card-label">Picks on favorites</span>
+            <span className="an-card-value">{Math.round(favPicks / (favPicks + dogPicks) * 100)}%</span>
+            <span className="an-card-sub">{favPicks} of {favPicks + dogPicks} picks</span>
+          </div>
+          <div className="an-card">
+            <span className="an-card-label">Picks on underdogs</span>
+            <span className="an-card-value">{Math.round(dogPicks / (favPicks + dogPicks) * 100)}%</span>
+            <span className="an-card-sub">{dogPicks} of {favPicks + dogPicks} picks</span>
+          </div>
+        </div>
+      )}
 
       {/* ── Hot / Cold pickers ── */}
       {last10Count > 0 && (
