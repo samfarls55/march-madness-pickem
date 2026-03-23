@@ -27,15 +27,6 @@ const ROUND_ORDER = [
   'sweet_sixteen', 'elite_eight', 'final_four', 'championship',
 ]
 
-const ROUND_POINTS = {
-  first_four:    1,
-  round_of_64:   1,
-  round_of_32:   1,
-  sweet_sixteen: 2,
-  elite_eight:   3,
-  final_four:    4,
-  championship:  5,
-}
 
 function spreadForPick(game, pickedTeam) {
   const val = pickedTeam === game.home_team ? game.spread : -game.spread
@@ -48,18 +39,16 @@ function ordinal(n) {
   return n + (s[(v - 20) % 10] || s[v] || s[0])
 }
 
-function RoundChart({ chartRounds, pointsPctByRound, accuracyByRound }) {
+function RoundChart({ chartRounds, accuracyByRound }) {
   if (chartRounds.length === 0) return null
-  const W = 500, H = 200
-  const PAD = { top: 28, right: 20, bottom: 36, left: 8 }
+  const W = 500, H = 180
+  const PAD = { top: 24, right: 20, bottom: 36, left: 8 }
   const chartW = W - PAD.left - PAD.right
   const chartH = H - PAD.top - PAD.bottom
   const n = chartRounds.length
   const cx = i => PAD.left + (n === 1 ? chartW / 2 : i * (chartW / (n - 1)))
-  const accY = r => PAD.top + chartH - ((accuracyByRound[r]  || 0) / 100) * chartH
-  const ptY  = r => PAD.top + chartH - ((pointsPctByRound[r] || 0) / 100) * chartH
+  const accY = r => PAD.top + chartH - ((accuracyByRound[r] || 0) / 100) * chartH
   const accPath = n > 1 ? chartRounds.map((r, i) => `${i === 0 ? 'M' : 'L'}${cx(i)},${accY(r)}`).join(' ') : null
-  const ptPath  = n > 1 ? chartRounds.map((r, i) => `${i === 0 ? 'M' : 'L'}${cx(i)},${ptY(r)}`).join(' ') : null
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block' }}>
@@ -68,39 +57,18 @@ function RoundChart({ chartRounds, pointsPctByRound, accuracyByRound }) {
         return <line key={pct} x1={PAD.left} y1={y} x2={W - PAD.right} y2={y} stroke="var(--border)" strokeWidth="0.75" strokeDasharray="4,4" />
       })}
       {accPath && <path d={accPath} fill="none" stroke="var(--accent2)" strokeWidth="2" strokeLinejoin="round" />}
-      {ptPath  && <path d={ptPath}  fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinejoin="round" />}
       {chartRounds.map((r, i) => {
-        const ax = cx(i), ay = accY(r), py = ptY(r)
-        const acc = accuracyByRound[r]  || 0
-        const pts = pointsPctByRound[r] || 0
-
-        // Separate labels when lines converge
-        const MIN_SEP = 13
-        let accLY = ay - 10, ptLY = py - 10
-        const sep = ptLY - accLY
-        if (Math.abs(sep) < MIN_SEP) {
-          const push = (MIN_SEP - Math.abs(sep)) / 2 + 1
-          if (sep >= 0) { accLY -= push; ptLY += push }
-          else          { ptLY  -= push; accLY += push }
-        }
-        accLY = Math.max(accLY, PAD.top - 14)
-        ptLY  = Math.max(ptLY,  PAD.top - 14)
-
+        const ax = cx(i), ay = accY(r)
+        const acc = accuracyByRound[r] || 0
+        const labelY = Math.max(ay - 10, PAD.top - 10)
         return (
           <g key={r}>
-            <title>{ROUND_LABELS[r]}: {acc}% accuracy, {pts} pts</title>
             <circle cx={ax} cy={ay} r={4} fill="var(--accent2)" />
-            <text x={ax} y={accLY} textAnchor="middle" fontSize="10" fill="var(--accent2)" fontFamily="monospace">{acc}%</text>
-            <circle cx={ax} cy={py} r={4} fill="var(--accent)" />
-            <text x={ax} y={ptLY}  textAnchor="middle" fontSize="10" fill="var(--accent)"  fontFamily="monospace">{pts}%</text>
+            <text x={ax} y={labelY} textAnchor="middle" fontSize="10" fill="var(--accent2)" fontFamily="monospace">{acc}%</text>
             <text x={ax} y={H - 6} textAnchor="middle" fontSize="10" fill="var(--muted)">{ROUND_SHORT[r]}</text>
           </g>
         )
       })}
-      <circle cx={PAD.left + 8} cy={14} r={3} fill="var(--accent2)" />
-      <text x={PAD.left + 14} y={18} fontSize="9" fill="var(--accent2)">Accuracy</text>
-      <circle cx={PAD.left + 74} cy={14} r={3} fill="var(--accent)" />
-      <text x={PAD.left + 80} y={18} fontSize="9" fill="var(--accent)">Pts available</text>
     </svg>
   )
 }
@@ -208,14 +176,10 @@ export default function MyPicks() {
   const chartRounds = ROUND_ORDER.filter(r =>
     gradedPicks.some(p => gameMap[p.game_id]?.round === r)
   )
-  const pointsPctByRound = {}, accuracyByRound = {}
+  const accuracyByRound = {}
   for (const r of chartRounds) {
     const rp = gradedPicks.filter(p => gameMap[p.game_id]?.round === r)
-    const earned    = rp.reduce((s, p) => s + (p.points_awarded || 0), 0)
-    const gradedGames = games.filter(g => g.round === r && resultMap[g.id])
-    const available = gradedGames.length * (ROUND_POINTS[r] || 1)
-    pointsPctByRound[r] = available > 0 ? Math.round(earned / available * 100) : 0
-    accuracyByRound[r]  = Math.round(rp.filter(p => p.is_correct).length / rp.length * 100)
+    accuracyByRound[r] = Math.round(rp.filter(p => p.is_correct).length / rp.length * 100)
   }
 
   const rankRounds  = ROUND_ORDER.filter(r => rankHistory[r] !== undefined)
@@ -285,7 +249,7 @@ export default function MyPicks() {
         <section className="an-section">
           <h2 className="an-section-title">By round</h2>
           <div className="mp-chart-wrap">
-            <RoundChart chartRounds={chartRounds} pointsPctByRound={pointsPctByRound} accuracyByRound={accuracyByRound} />
+            <RoundChart chartRounds={chartRounds} accuracyByRound={accuracyByRound} />
           </div>
         </section>
       )}
