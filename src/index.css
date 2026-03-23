@@ -692,6 +692,37 @@ select.field-input { cursor: pointer; }
   color: var(--muted);
   font-family: var(--font-mono);
 }
+.an-dist-bar-wrap {
+  padding: 0.25rem 0 0.5rem;
+}
+.an-dist-bar {
+  display: flex;
+  height: 10px;
+  border-radius: 99px;
+  overflow: hidden;
+  background: var(--border);
+  gap: 2px;
+  margin-bottom: 0.6rem;
+}
+.an-dist-chalk { background: var(--accent);  border-radius: 99px; transition: width 0.4s ease; }
+.an-dist-dog   { background: var(--accent2); border-radius: 99px; transition: width 0.4s ease; }
+.an-dist-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  font-family: var(--font-head);
+  font-weight: 600;
+}
+.an-dist-label-left  { display: flex; align-items: center; gap: 0.4rem; }
+.an-dist-label-right { display: flex; align-items: center; gap: 0.4rem; }
+.an-dist-swatch {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.an-dist-swatch.chalk { background: var(--accent); }
+.an-dist-swatch.dog   { background: var(--accent2); }
 
 .an-section { margin-bottom: 2rem; }
 .an-section-title {

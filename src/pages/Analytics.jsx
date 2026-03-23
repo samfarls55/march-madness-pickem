@@ -145,6 +145,7 @@ export default function Analytics() {
       </div>
 
       {/* ── Accuracy strip ── */}
+      <h2 className="an-section-title">Accuracy</h2>
       <div className="an-stat-strip">
         <div className="an-stat-cell">
           <span className="an-stat-label">Overall</span>
@@ -167,28 +168,40 @@ export default function Analytics() {
         )}
       </div>
 
-      {/* ── Pick distribution strip ── */}
-      {(favPicks + dogPicks) > 0 && (
-        <div className="an-stat-strip">
-          <div className="an-stat-cell">
-            <span className="an-stat-label">Picks on chalk</span>
-            <span className="an-stat-value">{Math.round(favPicks / (favPicks + dogPicks) * 100)}%</span>
-            <span className="an-stat-sub">{favPicks}/{favPicks + dogPicks} picks</span>
-          </div>
-          <div className="an-stat-cell">
-            <span className="an-stat-label">Picks on dogs</span>
-            <span className="an-stat-value">{Math.round(dogPicks / (favPicks + dogPicks) * 100)}%</span>
-            <span className="an-stat-sub">{dogPicks}/{favPicks + dogPicks} picks</span>
-          </div>
-        </div>
-      )}
+      {/* ── Pick distribution bar ── */}
+      {(favPicks + dogPicks) > 0 && (() => {
+        const total = favPicks + dogPicks
+        const chalkPct = Math.round(favPicks / total * 100)
+        const dogPct = 100 - chalkPct
+        return (
+          <section className="an-section">
+            <h2 className="an-section-title">Distribution</h2>
+            <div className="an-dist-bar-wrap">
+              <div className="an-dist-bar">
+                <div className="an-dist-chalk" style={{ width: `${chalkPct}%` }} />
+                <div className="an-dist-dog"   style={{ width: `${dogPct}%`   }} />
+              </div>
+              <div className="an-dist-labels">
+                <span className="an-dist-label-left">
+                  <span className="an-dist-swatch chalk" />
+                  Chalk — {chalkPct}% <span className="muted">({favPicks})</span>
+                </span>
+                <span className="an-dist-label-right">
+                  <span className="an-dist-swatch dog" />
+                  Dogs — {dogPct}% <span className="muted">({dogPicks})</span>
+                </span>
+              </div>
+            </div>
+          </section>
+        )
+      })()}
 
       {/* ── Hot / Cold pickers ── */}
       {last10Count > 0 && (
         <section className="an-section">
           <h2 className="an-section-title">
-            Form — last {last10Count} game{last10Count !== 1 ? 's' : ''}
-            <span className="an-section-meta">missed picks count as a loss</span>
+            Form
+            <span className="an-section-meta">last {last10Count} game{last10Count !== 1 ? 's' : ''} · missed picks count as a loss</span>
           </h2>
 
           {top5.length > 0 && (
