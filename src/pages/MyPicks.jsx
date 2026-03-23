@@ -58,7 +58,7 @@ function RoundChart({ chartRounds, pointsByRound, accuracyByRound }) {
         const y = PAD.top + chartH - (pct / 100) * chartH
         return <line key={pct} x1={PAD.left} y1={y} x2={W - PAD.right} y2={y} stroke="var(--border)" strokeWidth="0.75" strokeDasharray="4,4" />
       })}
-      {accPath && <path d={accPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinejoin="round" />}
+      {accPath && <path d={accPath} fill="none" stroke="var(--accent2)" strokeWidth="2" strokeLinejoin="round" />}
       {ptPath  && <path d={ptPath}  fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinejoin="round" />}
       {chartRounds.map((r, i) => {
         const ax = cx(i), ay = accY(r), px = cx(i), py = ptY(r)
@@ -67,16 +67,16 @@ function RoundChart({ chartRounds, pointsByRound, accuracyByRound }) {
         return (
           <g key={r}>
             <title>{ROUND_LABELS[r]}: {acc}% accuracy, {pts} pts</title>
-            <circle cx={ax} cy={ay} r={4} fill="#22c55e" />
-            <text x={ax} y={Math.max(ay - 8, PAD.top - 12)} textAnchor="middle" fontSize="10" fill="#22c55e" fontFamily="monospace">{acc}%</text>
+            <circle cx={ax} cy={ay} r={4} fill="var(--accent2)" />
+            <text x={ax} y={Math.max(ay - 8, PAD.top - 12)} textAnchor="middle" fontSize="10" fill="var(--accent2)" fontFamily="monospace">{acc}%</text>
             <circle cx={px} cy={py} r={4} fill="var(--accent)" />
             <text x={px} y={Math.max(py - 8, PAD.top - 24)} textAnchor="middle" fontSize="10" fill="var(--accent)" fontFamily="monospace">{pts}pt</text>
             <text x={ax} y={H - 6} textAnchor="middle" fontSize="10" fill="var(--muted)">{ROUND_SHORT[r]}</text>
           </g>
         )
       })}
-      <circle cx={PAD.left + 8} cy={14} r={3} fill="#22c55e" />
-      <text x={PAD.left + 14} y={18} fontSize="9" fill="#22c55e">Accuracy</text>
+      <circle cx={PAD.left + 8} cy={14} r={3} fill="var(--accent2)" />
+      <text x={PAD.left + 14} y={18} fontSize="9" fill="var(--accent2)">Accuracy</text>
       <circle cx={PAD.left + 74} cy={14} r={3} fill="var(--accent)" />
       <text x={PAD.left + 80} y={18} fontSize="9" fill="var(--accent)">Points</text>
     </svg>
@@ -124,7 +124,7 @@ export default function MyPicks() {
       const roundSet = new Set(ROUND_ORDER.slice(0, ri + 1))
       const hasGraded = (allPicks || []).some(pk =>
         pk.is_correct !== null && pk.is_correct !== undefined &&
-        roundSet.has(gameRoundMap[pk.game_id])
+        gameRoundMap[pk.game_id] === round
       )
       if (!hasGraded) continue
       const cumPoints = {}
