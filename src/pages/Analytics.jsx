@@ -33,7 +33,7 @@ function ordinal(n) {
   return n + (s[(v - 20) % 10] || s[v] || s[0])
 }
 
-function RoundChart({ chartRounds, accuracyByRound }) {
+function RoundChart({ chartRounds, accuracyByRound, leagueAccuracyByRound }) {
   if (chartRounds.length === 0) return null
   const W = 500, H = 180
   const PAD = { top: 24, right: 20, bottom: 36, left: 8 }
@@ -41,18 +41,23 @@ function RoundChart({ chartRounds, accuracyByRound }) {
   const chartH = H - PAD.top - PAD.bottom
   const n = chartRounds.length
   const cx = i => PAD.left + (n === 1 ? chartW / 2 : i * (chartW / (n - 1)))
-  const accY = r => PAD.top + chartH - ((accuracyByRound[r] || 0) / 100) * chartH
-  const accPath = n > 1 ? chartRounds.map((r, i) => `${i === 0 ? 'M' : 'L'}${cx(i)},${accY(r)}`).join(' ') : null
+  const yOf = val => PAD.top + chartH - (val / 100) * chartH
+  const accPath = n > 1 ? chartRounds.map((r, i) => `${i === 0 ? 'M' : 'L'}${cx(i)},${yOf(accuracyByRound[r] || 0)}`).join(' ') : null
+  const leagueRounds = leagueAccuracyByRound ? chartRounds.filter(r => leagueAccuracyByRound[r] != null) : []
+  const leaguePath = leagueRounds.length > 1
+    ? leagueRounds.map((r, i) => `${i === 0 ? 'M' : 'L'}${cx(chartRounds.indexOf(r))},${yOf(leagueAccuracyByRound[r])}`).join(' ')
+    : null
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block' }}>
       {[0, 25, 50, 75, 100].map(pct => {
-        const y = PAD.top + chartH - (pct / 100) * chartH
+        const y = yOf(pct)
         return <line key={pct} x1={PAD.left} y1={y} x2={W - PAD.right} y2={y} stroke="var(--border)" strokeWidth="0.75" strokeDasharray="4,4" />
       })}
-      {accPath && <path d={accPath} fill="none" stroke="var(--accent2)" strokeWidth="2" strokeLinejoin="round" />}
+      {leaguePath && <path d={leaguePath} fill="none" stroke="var(--muted)" strokeWidth="1.5" strokeDasharray="5,4" strokeLinejoin="round" opacity="0.6" />}
+      {accPath    && <path d={accPath}    fill="none" stroke="var(--accent2)" strokeWidth="2" strokeLinejoin="round" />}
       {chartRounds.map((r, i) => {
-        const ax = cx(i), ay = accY(r)
+        const ax = cx(i), ay = yOf(accuracyByRound[r] || 0)
         const acc = accuracyByRound[r] || 0
         const labelY = Math.max(ay - 10, PAD.top - 10)
         return (
@@ -63,6 +68,13 @@ function RoundChart({ chartRounds, accuracyByRound }) {
           </g>
         )
       })}
+      {/* Legend */}
+      <line x1={PAD.left} y1={14} x2={PAD.left + 18} y2={14} stroke="var(--accent2)" strokeWidth="2" />
+      <text x={PAD.left + 22} y={18} fontSize="9" fill="var(--accent2)">You</text>
+      {leaguePath && <>
+        <line x1={PAD.left + 48} y1={14} x2={PAD.left + 66} y2={14} stroke="var(--muted)" strokeWidth="1.5" strokeDasharray="5,4" opacity="0.6" />
+        <text x={PAD.left + 70} y={18} fontSize="9" fill="var(--muted)">Avg</text>
+      </>}
     </svg>
   )
 }
@@ -398,7 +410,11 @@ export default function Analytics() {
             <section className="an-section">
               <h2 className="an-section-title">Accuracy by round</h2>
               <div className="mp-chart-wrap">
-                <RoundChart chartRounds={myChartRounds} accuracyByRound={myAccuracyByRound} />
+                <RoundChart
+                  chartRounds={myChartRounds}
+                  accuracyByRound={myAccuracyByRound}
+                  leagueAccuracyByRound={Object.fromEntries(ROUND_ORDER.filter(r => roundStats[r]).map(r => [r, roundStats[r].accuracy]))}
+                />
               </div>
             </section>
           )}
