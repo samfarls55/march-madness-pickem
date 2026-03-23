@@ -174,7 +174,7 @@ export default function Leaderboard() {
                         className={`lb-streak ${streak.correct ? 'lb-streak-hot' : 'lb-streak-cold'}`}
                         title={streak.correct ? `${streak.count}-pick win streak` : `${streak.count}-pick loss streak`}
                       >
-                        {streak.correct ? '🔥' : '🤡'}{streak.count}
+                        {streak.correct ? '🔥' : '📉'}{streak.count}
                       </span>
                     )}
                     {isMe && <span className="lb-you">you</span>}
