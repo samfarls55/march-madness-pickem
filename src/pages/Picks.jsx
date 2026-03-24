@@ -1,21 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-
-const ROUND_LABELS = {
-  first_four: 'First Four',
-  round_of_64: 'Round of 64',
-  round_of_32: 'Round of 32',
-  sweet_sixteen: 'Sweet Sixteen',
-  elite_eight: 'Elite Eight',
-  final_four: 'Final Four',
-  championship: 'Championship',
-}
-
-const ROUND_POINTS = {
-  first_four: 1, round_of_64: 1, round_of_32: 1,
-  sweet_sixteen: 2, elite_eight: 3, final_four: 4, championship: 5,
-}
+import { ROUND_LABELS, ROUND_POINTS } from '../lib/constants'
 
 function formatSpread(spread) {
   return spread > 0 ? `+${spread}` : `${spread}`
@@ -38,6 +24,12 @@ function dateLabel(dateStr, today) {
   if (dateStr === today) return 'Today'
   const d = new Date(dateStr + 'T12:00:00')
   return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
+}
+
+function nameList(names) {
+  if (!names.length) return <span className="muted">—</span>
+  if (names.length <= 3) return names.join(', ')
+  return `${names.slice(0, 3).join(', ')} +${names.length - 3} more`
 }
 
 export default function Picks() {
@@ -243,12 +235,6 @@ export default function Picks() {
                         const total = awayPickers.length + homePickers.length
                         const awayPct = total ? Math.round(awayPickers.length / total * 100) : 50
                         const homePct = total ? 100 - awayPct : 50
-
-                        function nameList(names) {
-                          if (!names.length) return <span className="muted">—</span>
-                          if (names.length <= 3) return names.join(', ')
-                          return `${names.slice(0, 3).join(', ')} +${names.length - 3} more`
-                        }
 
                         return (
                           <div className="picks-breakdown">

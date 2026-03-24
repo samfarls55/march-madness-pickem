@@ -1,21 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-
-const ROUND_LABELS = {
-  first_four:    'First Four',
-  round_of_64:   'Round of 64',
-  round_of_32:   'Round of 32',
-  sweet_sixteen: 'Sweet Sixteen',
-  elite_eight:   'Elite Eight',
-  final_four:    'Final Four',
-  championship:  'Championship',
-}
-
-const ROUND_ORDER = [
-  'first_four', 'round_of_64', 'round_of_32',
-  'sweet_sixteen', 'elite_eight', 'final_four', 'championship',
-]
+import { ROUND_LABELS, ROUND_ORDER } from '../lib/constants'
 
 function spreadForPick(game, pickedTeam) {
   const val = pickedTeam === game.home_team ? game.spread : -game.spread

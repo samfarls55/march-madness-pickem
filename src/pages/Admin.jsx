@@ -1,29 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
-
-const today = new Date().toISOString().split('T')[0]
-
-const ROUND_ORDER = [
-  'first_four',
-  'round_of_64',
-  'round_of_32',
-  'sweet_sixteen',
-  'elite_eight',
-  'final_four',
-  'championship',
-]
-
-const ROUND_LABELS = {
-  first_four:    'First Four',
-  round_of_64:   'Round of 64',
-  round_of_32:   'Round of 32',
-  sweet_sixteen: 'Sweet Sixteen',
-  elite_eight:   'Elite Eight',
-  final_four:    'Final Four',
-  championship:  'Championship',
-}
+import { ROUND_ORDER, ROUND_LABELS, ROUND_POINTS } from '../lib/constants'
 
 export default function Admin() {
+  const today = useMemo(() => new Date().toISOString().split('T')[0], [])
+
   const [games, setGames]         = useState([])
   const [users, setUsers]         = useState([])
   const [picks, setPicks]         = useState([])
@@ -126,21 +107,18 @@ export default function Admin() {
     if (rErr) { setError(rErr.message); setSaving(prev => ({ ...prev, [game.id]: false })); return }
 
     const gamePicks = picks.filter(p => p.game_id === game.id)
-    for (const pick of gamePicks) {
-      await supabase.from('picks').update({
+    const pts = ROUND_POINTS[game.round] ?? 0
+    await Promise.all(gamePicks.map(pick =>
+      supabase.from('picks').update({
         is_correct: pick.picked_team === o.winner,
-        points_awarded: pick.picked_team === o.winner ? pointsForRound(game.round) : 0,
+        points_awarded: pick.picked_team === o.winner ? pts : 0,
       }).eq('id', pick.id)
-    }
+    ))
 
     setSaving(prev => ({ ...prev, [game.id]: false }))
     await loadAll()
   }
 
-  function pointsForRound(round) {
-    const map = { first_four: 1, round_of_64: 1, round_of_32: 1, sweet_sixteen: 2, elite_eight: 3, final_four: 4, championship: 5 }
-    return map[round] ?? 0
-  }
 
   const submittedSet = new Set(picks.map(p => `${p.user_id}:${p.game_id}`))
 

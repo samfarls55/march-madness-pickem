@@ -2,19 +2,13 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import { formatPhone } from '../lib/utils'
 
 export default function SignUp() {
   const { signUp, signIn } = useAuth()
   const navigate = useNavigate()
   const [mode, setMode] = useState('signup') // 'signup' | 'signin' | 'forgotpw'
   const [form, setForm] = useState({ first_name: '', last_name: '', email: '', phone_number: '', venmo_username: '', password: '' })
-
-  function formatPhone(val) {
-    const d = val.replace(/\D/g, '').slice(0, 10)
-    if (d.length <= 3) return d
-    if (d.length <= 6) return `(${d.slice(0, 3)}) ${d.slice(3)}`
-    return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`
-  }
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
 

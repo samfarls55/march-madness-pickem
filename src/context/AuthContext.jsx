@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext(null)
@@ -83,7 +83,7 @@ export function AuthProvider({ children }) {
 
   // Convenience: is the current user an admin?
   // We use a simple email allow-list via env var: VITE_ADMIN_EMAILS=a@b.com,c@d.com
-  const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || '').split(',').map(e => e.trim())
+  const adminEmails = useMemo(() => (import.meta.env.VITE_ADMIN_EMAILS || '').split(',').map(e => e.trim()), [])
   const isAdmin = session?.user?.email && adminEmails.includes(session.user.email)
 
   return (

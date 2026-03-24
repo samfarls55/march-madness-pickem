@@ -1,37 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-
-const ROUND_LABELS = {
-  first_four:    'First Four',
-  round_of_64:   'Round of 64',
-  round_of_32:   'Round of 32',
-  sweet_sixteen: 'Sweet Sixteen',
-  elite_eight:   'Elite Eight',
-  final_four:    'Final Four',
-  championship:  'Championship',
-}
-
-const ROUND_SHORT = {
-  first_four:    'FF4',
-  round_of_64:   'R64',
-  round_of_32:   'R32',
-  sweet_sixteen: 'S16',
-  elite_eight:   'E8',
-  final_four:    'FF',
-  championship:  '🏆',
-}
-
-const ROUND_ORDER = [
-  'first_four', 'round_of_64', 'round_of_32',
-  'sweet_sixteen', 'elite_eight', 'final_four', 'championship',
-]
-
-function ordinal(n) {
-  const s = ['th', 'st', 'nd', 'rd']
-  const v = n % 100
-  return n + (s[(v - 20) % 10] || s[v] || s[0])
-}
+import { ROUND_LABELS, ROUND_SHORT, ROUND_ORDER } from '../lib/constants'
+import { ordinal, isFavorite } from '../lib/utils'
 
 function RoundChart({ chartRounds, accuracyByRound, leagueAccuracyByRound }) {
   if (chartRounds.length === 0) return null
@@ -100,6 +71,24 @@ function DistBar({ chalkPicks, dogPicks }) {
           Dogs — {dogPct}% <span className="muted">({dogPicks})</span>
         </span>
       </div>
+    </div>
+  )
+}
+
+function FormRow({ player, hot }) {
+  return (
+    <div className="an-hot-row">
+      <span className="an-hot-name">{player.name}</span>
+      <div className="an-form-dots">
+        {player.dots.map((d, i) => (
+          <span key={i} className={`an-dot ${d}`} title={d === 'missed' ? 'No pick submitted' : d === 'correct' ? 'Correct' : 'Wrong'} />
+        ))}
+      </div>
+      <div className="an-hot-bar-wrap">
+        <div className={`an-hot-bar ${hot ? 'hot' : 'cold'}`} style={{ width: `${player.accuracy}%` }} />
+      </div>
+      <span className="an-hot-pct">{player.accuracy}%</span>
+      <span className="an-hot-sub muted">{player.correct}/{player.total}</span>
     </div>
   )
 }
@@ -176,10 +165,8 @@ export default function Analytics() {
       for (const p of allGraded) {
         const g = gameMap[p.game_id]
         if (!g) continue
-        const pickedFav = (p.picked_team === g.home_team && g.spread < 0) ||
-                          (p.picked_team === g.away_team && g.spread > 0)
-        if (pickedFav) { favPicks++; if (p.is_correct) favCorrect++ }
-        else            { dogPicks++; if (p.is_correct) dogCorrect++ }
+        if (isFavorite(p, g)) { favPicks++; if (p.is_correct) favCorrect++ }
+        else                  { dogPicks++; if (p.is_correct) dogCorrect++ }
       }
 
       const uniquePlayers = new Set(allGraded.map(p => p.user_id)).size
@@ -199,80 +186,67 @@ export default function Analytics() {
     load()
   }, [])
 
+  // ── Personal analytics (memoized — rank history is O(rounds × picks)) ──
+  const myId = session?.user?.id
+  const personal = useMemo(() => {
+    if (!data) return null
+    const { allPicks, gameMap } = data
+    const myPicks   = allPicks.filter(p => p.user_id === myId)
+    const myGraded  = myPicks.filter(p => p.is_correct !== null && p.is_correct !== undefined)
+    const myCorrect = myGraded.filter(p => p.is_correct).length
+    const myPoints  = myPicks.reduce((s, p) => s + (p.points_awarded || 0), 0)
+    const myOverall = myGraded.length > 0 ? Math.round(myCorrect / myGraded.length * 100) : null
+
+    let myChalk = 0, myDogs = 0
+    for (const p of myPicks) {
+      const g = gameMap[p.game_id]
+      if (!g) continue
+      if (isFavorite(p, g)) myChalk++; else myDogs++
+    }
+
+    const myChartRounds = ROUND_ORDER.filter(r =>
+      myGraded.some(p => gameMap[p.game_id]?.round === r)
+    )
+    const myAccuracyByRound = {}
+    for (const r of myChartRounds) {
+      const rp = myGraded.filter(p => gameMap[p.game_id]?.round === r)
+      myAccuracyByRound[r] = Math.round(rp.filter(p => p.is_correct).length / rp.length * 100)
+    }
+
+    // Cumulative rank at end of each round
+    const myRankHistory = {}
+    for (let ri = 0; ri < ROUND_ORDER.length; ri++) {
+      const round = ROUND_ORDER[ri]
+      const roundSet = new Set(ROUND_ORDER.slice(0, ri + 1))
+      const hasGraded = allPicks.some(pk =>
+        pk.is_correct !== null && pk.is_correct !== undefined &&
+        gameMap[pk.game_id]?.round === round
+      )
+      if (!hasGraded) continue
+      const cumPoints = {}
+      for (const pk of allPicks) {
+        if (pk.is_correct === null || pk.is_correct === undefined) continue
+        if (!roundSet.has(gameMap[pk.game_id]?.round)) continue
+        cumPoints[pk.user_id] = (cumPoints[pk.user_id] || 0) + (pk.points_awarded || 0)
+      }
+      const myPts = cumPoints[myId] || 0
+      myRankHistory[round] = Object.values(cumPoints).filter(pts => pts > myPts).length + 1
+    }
+    const rankRounds = ROUND_ORDER.filter(r => myRankHistory[r] !== undefined)
+
+    return { myCorrect, myPoints, myOverall, myChalk, myDogs, myChartRounds, myAccuracyByRound, myRankHistory, rankRounds }
+  }, [data, myId])
+
   if (loading) return <div className="page-shell"><div className="spinner" /></div>
   if (!data)   return null
 
   const { groupAccuracy, totalPicks, totalCorrect, uniquePlayers, top5, bottom5,
-          last10Count, roundStats, favPicks, favCorrect, dogPicks, dogCorrect,
-          allPicks, gameMap } = data
+          last10Count, roundStats, favPicks, favCorrect, dogPicks, dogCorrect } = data
 
   const favAccuracy = favPicks > 0 ? Math.round(favCorrect / favPicks * 100) : null
   const dogAccuracy = dogPicks > 0 ? Math.round(dogCorrect / dogPicks * 100) : null
 
-  // ── Personal analytics ────────────────────────────────────────
-  const myId = session?.user?.id
-  const myPicks   = allPicks.filter(p => p.user_id === myId)
-  const myGraded  = myPicks.filter(p => p.is_correct !== null && p.is_correct !== undefined)
-  const myCorrect = myGraded.filter(p => p.is_correct).length
-  const myPoints  = myPicks.reduce((s, p) => s + (p.points_awarded || 0), 0)
-  const myOverall = myGraded.length > 0 ? Math.round(myCorrect / myGraded.length * 100) : null
-
-  let myChalk = 0, myDogs = 0
-  for (const p of myPicks) {
-    const g = gameMap[p.game_id]
-    if (!g) continue
-    const isFav = (p.picked_team === g.home_team && g.spread < 0) ||
-                  (p.picked_team === g.away_team && g.spread > 0)
-    if (isFav) myChalk++; else myDogs++
-  }
-
-  const myChartRounds = ROUND_ORDER.filter(r =>
-    myGraded.some(p => gameMap[p.game_id]?.round === r)
-  )
-  const myAccuracyByRound = {}
-  for (const r of myChartRounds) {
-    const rp = myGraded.filter(p => gameMap[p.game_id]?.round === r)
-    myAccuracyByRound[r] = Math.round(rp.filter(p => p.is_correct).length / rp.length * 100)
-  }
-
-  // Cumulative rank at end of each round
-  const myRankHistory = {}
-  for (let ri = 0; ri < ROUND_ORDER.length; ri++) {
-    const round = ROUND_ORDER[ri]
-    const roundSet = new Set(ROUND_ORDER.slice(0, ri + 1))
-    const hasGraded = allPicks.some(pk =>
-      pk.is_correct !== null && pk.is_correct !== undefined &&
-      gameMap[pk.game_id]?.round === round
-    )
-    if (!hasGraded) continue
-    const cumPoints = {}
-    for (const pk of allPicks) {
-      if (pk.is_correct === null || pk.is_correct === undefined) continue
-      if (!roundSet.has(gameMap[pk.game_id]?.round)) continue
-      cumPoints[pk.user_id] = (cumPoints[pk.user_id] || 0) + (pk.points_awarded || 0)
-    }
-    const myPts = cumPoints[myId] || 0
-    myRankHistory[round] = Object.values(cumPoints).filter(pts => pts > myPts).length + 1
-  }
-  const rankRounds = ROUND_ORDER.filter(r => myRankHistory[r] !== undefined)
-
-  function FormRow({ player, hot }) {
-    return (
-      <div className="an-hot-row">
-        <span className="an-hot-name">{player.name}</span>
-        <div className="an-form-dots">
-          {player.dots.map((d, i) => (
-            <span key={i} className={`an-dot ${d}`} title={d === 'missed' ? 'No pick submitted' : d === 'correct' ? 'Correct' : 'Wrong'} />
-          ))}
-        </div>
-        <div className="an-hot-bar-wrap">
-          <div className={`an-hot-bar ${hot ? 'hot' : 'cold'}`} style={{ width: `${player.accuracy}%` }} />
-        </div>
-        <span className="an-hot-pct">{player.accuracy}%</span>
-        <span className="an-hot-sub muted">{player.correct}/{player.total}</span>
-      </div>
-    )
-  }
+  const { myCorrect, myPoints, myOverall, myChalk, myDogs, myChartRounds, myAccuracyByRound, myRankHistory, rankRounds } = personal
 
   return (
     <div className="page-shell">
