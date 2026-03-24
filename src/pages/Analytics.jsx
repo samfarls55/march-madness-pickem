@@ -234,7 +234,7 @@ export default function Analytics() {
     }
     const rankRounds = ROUND_ORDER.filter(r => myRankHistory[r] !== undefined)
 
-    return { myCorrect, myPoints, myOverall, myChalk, myDogs, myChartRounds, myAccuracyByRound, myRankHistory, rankRounds }
+    return { myCorrect, myPoints, myOverall, myGradedCount: myGraded.length, myChalk, myDogs, myChartRounds, myAccuracyByRound, myRankHistory, rankRounds }
   }, [data, myId])
 
   if (loading) return <div className="page-shell"><div className="spinner" /></div>
@@ -246,7 +246,7 @@ export default function Analytics() {
   const favAccuracy = favPicks > 0 ? Math.round(favCorrect / favPicks * 100) : null
   const dogAccuracy = dogPicks > 0 ? Math.round(dogCorrect / dogPicks * 100) : null
 
-  const { myCorrect, myPoints, myOverall, myChalk, myDogs, myChartRounds, myAccuracyByRound, myRankHistory, rankRounds } = personal
+  const { myCorrect, myPoints, myOverall, myGradedCount, myChalk, myDogs, myChartRounds, myAccuracyByRound, myRankHistory, rankRounds } = personal
 
   return (
     <div className="page-shell">
@@ -362,7 +362,7 @@ export default function Analytics() {
                 <div className="an-stat-cell">
                   <span className="an-stat-label">Overall</span>
                   <span className="an-stat-value">{myOverall}%</span>
-                  <span className="an-stat-sub">{myCorrect}/{myGraded.length}</span>
+                  <span className="an-stat-sub">{myCorrect}/{myGradedCount}</span>
                 </div>
                 <div className="an-stat-cell">
                   <span className="an-stat-label">Points</span>
